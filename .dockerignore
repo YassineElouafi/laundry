@@ -1,0 +1,27 @@
+# Keep the Docker build context small + secret-free.
+# Build context is the REPO ROOT for both images (pnpm workspace needs the lockfile,
+# pnpm-workspace.yaml, and every package.json). Do NOT ignore src — the API runs
+# TypeORM migrations against TypeScript source via ts-node at container start.
+
+**/node_modules
+**/dist
+**/.turbo
+**/coverage
+
+.git
+.github
+docs
+infra
+
+**/playwright-report
+**/test-results
+**/*.tsbuildinfo
+
+# Never bake secrets into an image (but keep the example envs).
+**/.env
+**/.env.*
+!**/.env.example
+!**/env-example-relational
+
+.DS_Store
+**/*.log
