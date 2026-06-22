@@ -23,3 +23,8 @@ pnpm-debug.log*
 # Test / coverage
 coverage/
 playwright-report/
+
+# Dokploy deploy secrets — never commit (DB password, JWT secrets, API key)
+.env.dokploy
+infra/.env.dokploy
+infra/api.env.dokploy
