@@ -26,7 +26,6 @@ import {
   TableHeader,
   TableRow,
 } from '@/components/ui/table'
-import { ConfigDrawer } from '@/components/config-drawer'
 import { Header } from '@/components/layout/header'
 import { LanguageSwitch } from '@/components/language-switch'
 import { Main } from '@/components/layout/main'
@@ -74,7 +73,6 @@ export function Catalog() {
         <div className='ms-auto flex items-center gap-2'>
           <LanguageSwitch />
           <ThemeSwitch />
-          <ConfigDrawer />
           <ProfileDropdown />
         </div>
       </Header>

@@ -9,7 +9,7 @@ import { useAuthStore } from '@/stores/auth-store'
 // empty same-origin baseURL — an empty VITE_API_URL would otherwise send every
 // request to the dashboard's own nginx (→ 405 on POST).
 export const API_URL =
-  import.meta.env.VITE_API_URL || 'http://localhost:3001/api/v1'
+  import.meta.env.VITE_API_URL || 'http://localhost:3000/api/v1'
 
 export const api = axios.create({
   baseURL: API_URL,
