@@ -4,6 +4,7 @@ import {
   Post,
   Body,
   Param,
+  Query,
   UseGuards,
   Request,
   HttpCode,
@@ -23,6 +24,11 @@ import { AuthGuard } from '@nestjs/passport';
 import { Roles } from '../roles/roles.decorator';
 import { RoleEnum } from '../roles/roles.enum';
 import { RolesGuard } from '../roles/roles.guard';
+import {
+  InfinityPaginationResponse,
+  InfinityPaginationResponseDto,
+} from '../utils/dto/infinity-pagination-response.dto';
+import { infinityPagination } from '../utils/infinity-pagination';
 
 @ApiTags('Payments')
 @Controller({
@@ -38,6 +44,26 @@ export class PaymentsController {
   @ApiCreatedResponse({ type: Payment })
   initiate(@Request() request, @Body() dto: InitiatePaymentDto) {
     return this.paymentsService.initiate(request.user.id, dto.orderId);
+  }
+
+  @Get()
+  @ApiBearerAuth()
+  @Roles(RoleEnum.admin)
+  @UseGuards(AuthGuard('jwt'), RolesGuard)
+  @ApiOkResponse({ type: InfinityPaginationResponse(Payment) })
+  async findAll(
+    @Query('page') page?: string,
+    @Query('limit') limit?: string,
+  ): Promise<InfinityPaginationResponseDto<Payment>> {
+    const p = Number(page) || 1;
+    let l = Number(limit) || 20;
+    if (l > 50) l = 50;
+    return infinityPagination(
+      await this.paymentsService.findAllWithPagination({
+        paginationOptions: { page: p, limit: l },
+      }),
+      { page: p, limit: l },
+    );
   }
 
   @Get(':id')

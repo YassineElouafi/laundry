@@ -15,8 +15,13 @@ export const AppDataSource = new DataSource({
   dropSchema: false,
   keepConnectionAlive: true,
   logging: process.env.NODE_ENV !== 'production',
-  entities: [__dirname + '/../**/*.entity{.ts,.js}'],
-  migrations: [__dirname + '/migrations/**/*{.ts,.js}'],
+  // cwd-relative globs (CLI runs from apps/api). Avoids __dirname, which is
+  // undefined under newer TypeORM's ESM data-source loader.
+  entities: ['src/**/*.entity{.ts,.js}', 'dist/**/*.entity{.ts,.js}'],
+  migrations: [
+    'src/database/migrations/**/*{.ts,.js}',
+    'dist/database/migrations/**/*{.js}',
+  ],
   cli: {
     entitiesDir: 'src',
 

@@ -14,9 +14,12 @@ import { User } from '../users/domain/user';
 import { UsersService } from '../users/users.service';
 import { AddressesService } from '../addresses/addresses.service';
 import { ServiceItemsService } from '../service-items/service-items.service';
+import { TimeSlotsService } from '../time-slots/time-slots.service';
 import { OrderEventRepository } from '../order-events/infrastructure/persistence/order-event.repository';
 import { OrderItem } from '../order-items/domain/order-item';
 import { OrderStatusEnum, ORDER_TRANSITIONS } from './order-status.enum';
+import { DeliveryTypeEnum } from './delivery-type.enum';
+import { RoleEnum } from '../roles/roles.enum';
 import {
   ORDER_CREATED_EVENT,
   ORDER_STATUS_CHANGED_EVENT,
@@ -26,6 +29,12 @@ import {
 
 const round2 = (value: number): number => Math.round(value * 100) / 100;
 
+// Flat delivery fee (MAD) by delivery type. Concierge (hand-to-hand) costs more.
+const DELIVERY_FEES: Record<DeliveryTypeEnum, number> = {
+  [DeliveryTypeEnum.doorstep]: 0,
+  [DeliveryTypeEnum.concierge]: 20,
+};
+
 @Injectable()
 export class OrdersService {
   constructor(
@@ -34,6 +43,7 @@ export class OrdersService {
     private readonly userService: UsersService,
     private readonly addressesService: AddressesService,
     private readonly serviceItemsService: ServiceItemsService,
+    private readonly timeSlotsService: TimeSlotsService,
     private readonly eventEmitter: EventEmitter2,
   ) {}
 
@@ -82,15 +92,32 @@ export class OrdersService {
       items.push(orderItem);
     }
 
+    // Capacity-aware slot booking (optional). Throws 422 if a slot is full.
+    const pickupSlot = createOrderDto.pickupSlotId
+      ? await this.timeSlotsService.book(createOrderDto.pickupSlotId)
+      : null;
+    const deliverySlot = createOrderDto.deliverySlotId
+      ? await this.timeSlotsService.book(createOrderDto.deliverySlotId)
+      : null;
+
+    const deliveryType =
+      createOrderDto.deliveryType ?? DeliveryTypeEnum.doorstep;
+    const deliveryFee = DELIVERY_FEES[deliveryType];
+    const total = round2(subtotal + deliveryFee);
+
     const order = await this.orderRepository.create({
       user,
       pickupAddress,
       deliveryAddress,
+      pickupSlot,
+      deliverySlot,
       paymentMethod: createOrderDto.paymentMethod,
+      deliveryType,
+      deliveryFee,
       notes: createOrderDto.notes,
       status: OrderStatusEnum.scheduled,
       subtotal,
-      total: subtotal,
+      total,
       items,
     });
 
@@ -185,6 +212,16 @@ export class OrdersService {
       });
     }
 
+    // Free booked capacity when an order is cancelled.
+    if (newStatus === OrderStatusEnum.cancelled) {
+      if (order.pickupSlot?.id) {
+        await this.timeSlotsService.release(order.pickupSlot.id);
+      }
+      if (order.deliverySlot?.id) {
+        await this.timeSlotsService.release(order.deliverySlot.id);
+      }
+    }
+
     await this.orderRepository.update(id, { status: newStatus });
     const updated = (await this.orderRepository.findById(id)) as Order;
 
@@ -197,6 +234,53 @@ export class OrdersService {
     );
 
     return reloaded;
+  }
+
+  /**
+   * Assign a driver to an order (admin). Validates the user has the driver
+   * role, sets the relation, and advances the order to DRIVER_ASSIGNED.
+   */
+  async assignDriver(id: Order['id'], driverId: User['id']): Promise<Order> {
+    const order = await this.orderRepository.findById(id);
+    if (!order) {
+      throw new NotFoundException('orderNotFound');
+    }
+
+    const driver = await this.userService.findById(driverId);
+    if (!driver || Number(driver.role?.id) !== Number(RoleEnum.driver)) {
+      throw new UnprocessableEntityException({
+        status: HttpStatus.UNPROCESSABLE_ENTITY,
+        errors: { driver: 'notADriver' },
+      });
+    }
+
+    await this.orderRepository.update(id, { driver });
+
+    // Advance to DRIVER_ASSIGNED when coming from SCHEDULED (no-op otherwise).
+    if (order.status === OrderStatusEnum.scheduled) {
+      return this.transition(
+        id,
+        OrderStatusEnum.driverAssigned,
+        `Assigned to ${driver.firstName ?? driver.email}`,
+      );
+    }
+    return (await this.orderRepository.findById(id)) as Order;
+  }
+
+  findAllByDriverWithPagination({
+    driverId,
+    paginationOptions,
+  }: {
+    driverId: User['id'];
+    paginationOptions: IPaginationOptions;
+  }) {
+    return this.orderRepository.findAllByDriverWithPagination({
+      driverId,
+      paginationOptions: {
+        page: paginationOptions.page,
+        limit: paginationOptions.limit,
+      },
+    });
   }
 
   async remove(id: Order['id']) {

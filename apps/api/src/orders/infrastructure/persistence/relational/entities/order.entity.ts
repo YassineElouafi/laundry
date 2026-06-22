@@ -13,10 +13,12 @@ import {
 } from 'typeorm';
 import { OrderItemEntity } from '../../../../../order-items/infrastructure/persistence/relational/entities/order-item.entity';
 import { OrderEventEntity } from '../../../../../order-events/infrastructure/persistence/relational/entities/order-event.entity';
+import { TimeSlotEntity } from '../../../../../time-slots/infrastructure/persistence/relational/entities/time-slot.entity';
 import { EntityRelationalHelper } from '../../../../../utils/relational-entity-helper';
 import { ColumnNumericTransformer } from '../../../../../utils/transformers/column-numeric.transformer';
 import { OrderStatusEnum } from '../../../../order-status.enum';
 import { PaymentMethodEnum } from '../../../../payment-method.enum';
+import { DeliveryTypeEnum } from '../../../../delivery-type.enum';
 
 @Entity({
   name: 'order',
@@ -63,14 +65,41 @@ export class OrderEntity extends EntityRelationalHelper {
   })
   status?: OrderStatusEnum;
 
+  @Column({
+    nullable: false,
+    type: 'enum',
+    enum: DeliveryTypeEnum,
+    default: DeliveryTypeEnum.doorstep,
+  })
+  deliveryType?: DeliveryTypeEnum;
+
+  @Column({
+    nullable: false,
+    type: 'numeric',
+    precision: 10,
+    scale: 2,
+    default: 0,
+    transformer: new ColumnNumericTransformer(),
+  })
+  deliveryFee?: number;
+
   @ManyToOne(() => AddressEntity, { eager: true, nullable: false })
   deliveryAddress: AddressEntity;
 
   @ManyToOne(() => AddressEntity, { eager: true, nullable: false })
   pickupAddress: AddressEntity;
 
+  @ManyToOne(() => TimeSlotEntity, { eager: true, nullable: true })
+  pickupSlot?: TimeSlotEntity | null;
+
+  @ManyToOne(() => TimeSlotEntity, { eager: true, nullable: true })
+  deliverySlot?: TimeSlotEntity | null;
+
   @ManyToOne(() => UserEntity, { eager: true, nullable: false })
   user?: UserEntity;
+
+  @ManyToOne(() => UserEntity, { eager: true, nullable: true })
+  driver?: UserEntity | null;
 
   @OneToMany(() => OrderItemEntity, (item) => item.order, {
     eager: true,

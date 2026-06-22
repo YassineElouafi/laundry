@@ -4,8 +4,10 @@ import { Exclude } from 'class-transformer';
 import { ApiProperty } from '@nestjs/swagger';
 import { OrderStatusEnum } from '../order-status.enum';
 import { PaymentMethodEnum } from '../payment-method.enum';
+import { DeliveryTypeEnum } from '../delivery-type.enum';
 import { OrderItem } from '../../order-items/domain/order-item';
 import { OrderEvent } from '../../order-events/domain/order-event';
+import { TimeSlot } from '../../time-slots/domain/time-slot';
 
 export class Order {
   @ApiProperty({
@@ -38,6 +40,17 @@ export class Order {
   status?: OrderStatusEnum;
 
   @ApiProperty({
+    enum: DeliveryTypeEnum,
+  })
+  deliveryType?: DeliveryTypeEnum;
+
+  @ApiProperty({
+    type: () => Number,
+    example: 15,
+  })
+  deliveryFee?: number;
+
+  @ApiProperty({
     type: () => Address,
     nullable: false,
   })
@@ -48,6 +61,18 @@ export class Order {
     nullable: false,
   })
   pickupAddress: Address;
+
+  @ApiProperty({
+    type: () => TimeSlot,
+    nullable: true,
+  })
+  pickupSlot?: TimeSlot | null;
+
+  @ApiProperty({
+    type: () => TimeSlot,
+    nullable: true,
+  })
+  deliverySlot?: TimeSlot | null;
 
   @ApiProperty({
     type: () => [OrderItem],
@@ -61,6 +86,12 @@ export class Order {
 
   @Exclude({ toPlainOnly: true })
   user?: User;
+
+  @ApiProperty({
+    type: () => User,
+    nullable: true,
+  })
+  driver?: User | null;
 
   @ApiProperty({
     type: String,

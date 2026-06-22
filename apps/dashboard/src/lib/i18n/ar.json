@@ -94,6 +94,13 @@
     "delivery": "توصيل",
     "newSlot": "موعد جديد"
   },
+  "drivers": {
+    "title": "السائقون",
+    "subtitle": "إدارة السائقين والتعيينات.",
+    "assign": "تعيين سائق",
+    "assigned": "السائق",
+    "unassigned": "غير معيّن"
+  },
   "customers": {
     "title": "العملاء",
     "subtitle": "البحث عن العملاء وعرضهم.",

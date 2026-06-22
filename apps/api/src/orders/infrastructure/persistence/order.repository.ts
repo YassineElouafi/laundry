@@ -23,6 +23,14 @@ export abstract class OrderRepository {
     paginationOptions: IPaginationOptions;
   }): Promise<Order[]>;
 
+  abstract findAllByDriverWithPagination({
+    driverId,
+    paginationOptions,
+  }: {
+    driverId: User['id'];
+    paginationOptions: IPaginationOptions;
+  }): Promise<Order[]>;
+
   abstract findById(id: Order['id']): Promise<NullableType<Order>>;
 
   abstract findByIdForUser(

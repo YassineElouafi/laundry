@@ -12,8 +12,9 @@ import {
   ArrayNotEmpty,
 } from 'class-validator';
 
-import { ApiProperty } from '@nestjs/swagger';
+import { ApiProperty, ApiPropertyOptional } from '@nestjs/swagger';
 import { PaymentMethodEnum } from '../payment-method.enum';
+import { DeliveryTypeEnum } from '../delivery-type.enum';
 import { CreateOrderItemDto } from './create-order-item.dto';
 
 export class CreateOrderDto {
@@ -32,6 +33,27 @@ export class CreateOrderDto {
   })
   @IsEnum(PaymentMethodEnum)
   paymentMethod: PaymentMethodEnum;
+
+  @ApiPropertyOptional({
+    enum: DeliveryTypeEnum,
+    example: DeliveryTypeEnum.doorstep,
+  })
+  @IsOptional()
+  @IsEnum(DeliveryTypeEnum)
+  deliveryType?: DeliveryTypeEnum;
+
+  @ApiPropertyOptional({ type: () => String, description: 'Pickup TimeSlot id' })
+  @IsOptional()
+  @IsString()
+  pickupSlotId?: string;
+
+  @ApiPropertyOptional({
+    type: () => String,
+    description: 'Delivery TimeSlot id',
+  })
+  @IsOptional()
+  @IsString()
+  deliverySlotId?: string;
 
   @ApiProperty({
     required: true,

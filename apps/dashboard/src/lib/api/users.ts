@@ -7,3 +7,11 @@ export async function listUsers(): Promise<UserDto[]> {
   })
   return data.data
 }
+
+export function hasRole(u: UserDto, role: string): boolean {
+  return (u.role?.name ?? '').toLowerCase() === role
+}
+
+export async function listDrivers(): Promise<UserDto[]> {
+  return (await listUsers()).filter((u) => hasRole(u, 'driver'))
+}

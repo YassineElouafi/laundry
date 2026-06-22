@@ -26,8 +26,10 @@ import { Route as AuthenticatedUsersIndexRouteImport } from './routes/_authentic
 import { Route as AuthenticatedTasksIndexRouteImport } from './routes/_authenticated/tasks/index'
 import { Route as AuthenticatedSettingsIndexRouteImport } from './routes/_authenticated/settings/index'
 import { Route as AuthenticatedSchedulingIndexRouteImport } from './routes/_authenticated/scheduling/index'
+import { Route as AuthenticatedPaymentsIndexRouteImport } from './routes/_authenticated/payments/index'
 import { Route as AuthenticatedOrdersIndexRouteImport } from './routes/_authenticated/orders/index'
 import { Route as AuthenticatedHelpCenterIndexRouteImport } from './routes/_authenticated/help-center/index'
+import { Route as AuthenticatedDriversIndexRouteImport } from './routes/_authenticated/drivers/index'
 import { Route as AuthenticatedCustomersIndexRouteImport } from './routes/_authenticated/customers/index'
 import { Route as AuthenticatedChatsIndexRouteImport } from './routes/_authenticated/chats/index'
 import { Route as AuthenticatedCatalogIndexRouteImport } from './routes/_authenticated/catalog/index'
@@ -126,6 +128,12 @@ const AuthenticatedSchedulingIndexRoute =
     path: '/scheduling/',
     getParentRoute: () => AuthenticatedRouteRoute,
   } as any)
+const AuthenticatedPaymentsIndexRoute =
+  AuthenticatedPaymentsIndexRouteImport.update({
+    id: '/payments/',
+    path: '/payments/',
+    getParentRoute: () => AuthenticatedRouteRoute,
+  } as any)
 const AuthenticatedOrdersIndexRoute =
   AuthenticatedOrdersIndexRouteImport.update({
     id: '/orders/',
@@ -136,6 +144,12 @@ const AuthenticatedHelpCenterIndexRoute =
   AuthenticatedHelpCenterIndexRouteImport.update({
     id: '/help-center/',
     path: '/help-center/',
+    getParentRoute: () => AuthenticatedRouteRoute,
+  } as any)
+const AuthenticatedDriversIndexRoute =
+  AuthenticatedDriversIndexRouteImport.update({
+    id: '/drivers/',
+    path: '/drivers/',
     getParentRoute: () => AuthenticatedRouteRoute,
   } as any)
 const AuthenticatedCustomersIndexRoute =
@@ -220,8 +234,10 @@ export interface FileRoutesByFullPath {
   '/catalog/': typeof AuthenticatedCatalogIndexRoute
   '/chats/': typeof AuthenticatedChatsIndexRoute
   '/customers/': typeof AuthenticatedCustomersIndexRoute
+  '/drivers/': typeof AuthenticatedDriversIndexRoute
   '/help-center/': typeof AuthenticatedHelpCenterIndexRoute
   '/orders/': typeof AuthenticatedOrdersIndexRoute
+  '/payments/': typeof AuthenticatedPaymentsIndexRoute
   '/scheduling/': typeof AuthenticatedSchedulingIndexRoute
   '/settings/': typeof AuthenticatedSettingsIndexRoute
   '/tasks/': typeof AuthenticatedTasksIndexRoute
@@ -249,8 +265,10 @@ export interface FileRoutesByTo {
   '/catalog': typeof AuthenticatedCatalogIndexRoute
   '/chats': typeof AuthenticatedChatsIndexRoute
   '/customers': typeof AuthenticatedCustomersIndexRoute
+  '/drivers': typeof AuthenticatedDriversIndexRoute
   '/help-center': typeof AuthenticatedHelpCenterIndexRoute
   '/orders': typeof AuthenticatedOrdersIndexRoute
+  '/payments': typeof AuthenticatedPaymentsIndexRoute
   '/scheduling': typeof AuthenticatedSchedulingIndexRoute
   '/settings': typeof AuthenticatedSettingsIndexRoute
   '/tasks': typeof AuthenticatedTasksIndexRoute
@@ -281,8 +299,10 @@ export interface FileRoutesById {
   '/_authenticated/catalog/': typeof AuthenticatedCatalogIndexRoute
   '/_authenticated/chats/': typeof AuthenticatedChatsIndexRoute
   '/_authenticated/customers/': typeof AuthenticatedCustomersIndexRoute
+  '/_authenticated/drivers/': typeof AuthenticatedDriversIndexRoute
   '/_authenticated/help-center/': typeof AuthenticatedHelpCenterIndexRoute
   '/_authenticated/orders/': typeof AuthenticatedOrdersIndexRoute
+  '/_authenticated/payments/': typeof AuthenticatedPaymentsIndexRoute
   '/_authenticated/scheduling/': typeof AuthenticatedSchedulingIndexRoute
   '/_authenticated/settings/': typeof AuthenticatedSettingsIndexRoute
   '/_authenticated/tasks/': typeof AuthenticatedTasksIndexRoute
@@ -313,8 +333,10 @@ export interface FileRouteTypes {
     | '/catalog/'
     | '/chats/'
     | '/customers/'
+    | '/drivers/'
     | '/help-center/'
     | '/orders/'
+    | '/payments/'
     | '/scheduling/'
     | '/settings/'
     | '/tasks/'
@@ -342,8 +364,10 @@ export interface FileRouteTypes {
     | '/catalog'
     | '/chats'
     | '/customers'
+    | '/drivers'
     | '/help-center'
     | '/orders'
+    | '/payments'
     | '/scheduling'
     | '/settings'
     | '/tasks'
@@ -373,8 +397,10 @@ export interface FileRouteTypes {
     | '/_authenticated/catalog/'
     | '/_authenticated/chats/'
     | '/_authenticated/customers/'
+    | '/_authenticated/drivers/'
     | '/_authenticated/help-center/'
     | '/_authenticated/orders/'
+    | '/_authenticated/payments/'
     | '/_authenticated/scheduling/'
     | '/_authenticated/settings/'
     | '/_authenticated/tasks/'
@@ -516,6 +542,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AuthenticatedSchedulingIndexRouteImport
       parentRoute: typeof AuthenticatedRouteRoute
     }
+    '/_authenticated/payments/': {
+      id: '/_authenticated/payments/'
+      path: '/payments'
+      fullPath: '/payments/'
+      preLoaderRoute: typeof AuthenticatedPaymentsIndexRouteImport
+      parentRoute: typeof AuthenticatedRouteRoute
+    }
     '/_authenticated/orders/': {
       id: '/_authenticated/orders/'
       path: '/orders'
@@ -528,6 +561,13 @@ declare module '@tanstack/react-router' {
       path: '/help-center'
       fullPath: '/help-center/'
       preLoaderRoute: typeof AuthenticatedHelpCenterIndexRouteImport
+      parentRoute: typeof AuthenticatedRouteRoute
+    }
+    '/_authenticated/drivers/': {
+      id: '/_authenticated/drivers/'
+      path: '/drivers'
+      fullPath: '/drivers/'
+      preLoaderRoute: typeof AuthenticatedDriversIndexRouteImport
       parentRoute: typeof AuthenticatedRouteRoute
     }
     '/_authenticated/customers/': {
@@ -635,8 +675,10 @@ interface AuthenticatedRouteRouteChildren {
   AuthenticatedCatalogIndexRoute: typeof AuthenticatedCatalogIndexRoute
   AuthenticatedChatsIndexRoute: typeof AuthenticatedChatsIndexRoute
   AuthenticatedCustomersIndexRoute: typeof AuthenticatedCustomersIndexRoute
+  AuthenticatedDriversIndexRoute: typeof AuthenticatedDriversIndexRoute
   AuthenticatedHelpCenterIndexRoute: typeof AuthenticatedHelpCenterIndexRoute
   AuthenticatedOrdersIndexRoute: typeof AuthenticatedOrdersIndexRoute
+  AuthenticatedPaymentsIndexRoute: typeof AuthenticatedPaymentsIndexRoute
   AuthenticatedSchedulingIndexRoute: typeof AuthenticatedSchedulingIndexRoute
   AuthenticatedTasksIndexRoute: typeof AuthenticatedTasksIndexRoute
   AuthenticatedUsersIndexRoute: typeof AuthenticatedUsersIndexRoute
@@ -651,8 +693,10 @@ const AuthenticatedRouteRouteChildren: AuthenticatedRouteRouteChildren = {
   AuthenticatedCatalogIndexRoute: AuthenticatedCatalogIndexRoute,
   AuthenticatedChatsIndexRoute: AuthenticatedChatsIndexRoute,
   AuthenticatedCustomersIndexRoute: AuthenticatedCustomersIndexRoute,
+  AuthenticatedDriversIndexRoute: AuthenticatedDriversIndexRoute,
   AuthenticatedHelpCenterIndexRoute: AuthenticatedHelpCenterIndexRoute,
   AuthenticatedOrdersIndexRoute: AuthenticatedOrdersIndexRoute,
+  AuthenticatedPaymentsIndexRoute: AuthenticatedPaymentsIndexRoute,
   AuthenticatedSchedulingIndexRoute: AuthenticatedSchedulingIndexRoute,
   AuthenticatedTasksIndexRoute: AuthenticatedTasksIndexRoute,
   AuthenticatedUsersIndexRoute: AuthenticatedUsersIndexRoute,

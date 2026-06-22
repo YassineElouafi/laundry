@@ -5,6 +5,7 @@ import { OrdersService } from './orders.service';
 import { OrdersController } from './orders.controller';
 import { RelationalOrderPersistenceModule } from './infrastructure/persistence/relational/relational-persistence.module';
 import { ServiceItemsModule } from '../service-items/service-items.module';
+import { TimeSlotsModule } from '../time-slots/time-slots.module';
 import { RelationalOrderEventPersistenceModule } from '../order-events/infrastructure/persistence/relational/relational-persistence.module';
 
 @Module({
@@ -12,6 +13,7 @@ import { RelationalOrderEventPersistenceModule } from '../order-events/infrastru
     AddressesModule,
     UsersModule,
     ServiceItemsModule,
+    TimeSlotsModule,
     RelationalOrderPersistenceModule,
     RelationalOrderEventPersistenceModule,
   ],

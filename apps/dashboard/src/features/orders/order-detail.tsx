@@ -8,7 +8,8 @@ import { useNavigate } from '@tanstack/react-router'
 import { ArrowLeft, Loader2 } from 'lucide-react'
 import { useTranslation } from 'react-i18next'
 import { toast } from 'sonner'
-import { advanceOrderStatus, getOrder } from '@/lib/api/orders'
+import { advanceOrderStatus, assignDriver, getOrder } from '@/lib/api/orders'
+import { listDrivers } from '@/lib/api/users'
 import { ORDER_TRANSITIONS, localized, type OrderStatus } from '@/lib/api/types'
 import { formatDateTime, formatMAD } from '@/lib/format'
 import { Button } from '@/components/ui/button'
@@ -46,10 +47,27 @@ export function OrderDetail({ orderId }: { orderId: string }) {
   const navigate = useNavigate()
   const queryClient = useQueryClient()
   const [nextStatus, setNextStatus] = useState<string>('')
+  const [driverId, setDriverId] = useState<string>('')
 
   const { data: order, isLoading } = useQuery({
     queryKey: ['order', orderId],
     queryFn: () => getOrder(orderId),
+  })
+
+  const { data: drivers } = useQuery({
+    queryKey: ['drivers'],
+    queryFn: listDrivers,
+  })
+
+  const assign = useMutation({
+    mutationFn: (id: string) => assignDriver(orderId, id),
+    onSuccess: () => {
+      toast.success(t('drivers.assign'))
+      setDriverId('')
+      queryClient.invalidateQueries({ queryKey: ['order', orderId] })
+      queryClient.invalidateQueries({ queryKey: ['orders'] })
+    },
+    onError: () => toast.error('Assignment failed.'),
   })
 
   const mutation = useMutation({
@@ -206,6 +224,53 @@ export function OrderDetail({ orderId }: { orderId: string }) {
                       {t('orders.payment')}:{' '}
                       <span className='uppercase'>{order.paymentMethod}</span>
                     </div>
+                    {order.deliveryType && (
+                      <div>
+                        {t('scheduling.delivery')}:{' '}
+                        <span className='capitalize'>{order.deliveryType}</span>
+                        {order.deliveryFee ? ` (+${formatMAD(order.deliveryFee, lang)})` : ''}
+                      </div>
+                    )}
+                  </CardContent>
+                </Card>
+
+                <Card>
+                  <CardHeader>
+                    <CardTitle>{t('drivers.assigned')}</CardTitle>
+                  </CardHeader>
+                  <CardContent className='space-y-2 text-sm'>
+                    <div className='font-medium'>
+                      {order.driver
+                        ? [order.driver.firstName, order.driver.lastName]
+                            .filter(Boolean)
+                            .join(' ') || order.driver.email
+                        : t('drivers.unassigned')}
+                    </div>
+                    <div className='flex items-center gap-2'>
+                      <Select value={driverId} onValueChange={setDriverId}>
+                        <SelectTrigger className='h-8'>
+                          <SelectValue placeholder={t('drivers.assign')} />
+                        </SelectTrigger>
+                        <SelectContent>
+                          {(drivers ?? []).map((d) => (
+                            <SelectItem key={d.id} value={String(d.id)}>
+                              {[d.firstName, d.lastName].filter(Boolean).join(' ') ||
+                                d.email}
+                            </SelectItem>
+                          ))}
+                        </SelectContent>
+                      </Select>
+                      <Button
+                        size='sm'
+                        disabled={!driverId || assign.isPending}
+                        onClick={() => driverId && assign.mutate(driverId)}
+                      >
+                        {assign.isPending ? (
+                          <Loader2 className='size-4 animate-spin' />
+                        ) : null}
+                        {t('common.confirm')}
+                      </Button>
+                    </div>
                   </CardContent>
                 </Card>
 
@@ -218,6 +283,12 @@ export function OrderDetail({ orderId }: { orderId: string }) {
                     <div className='text-muted-foreground'>
                       {order.pickupAddress?.line1}, {order.pickupAddress?.city}
                     </div>
+                    {order.pickupSlot && (
+                      <div className='text-muted-foreground pt-1'>
+                        {order.pickupSlot.date} · {order.pickupSlot.windowStart}–
+                        {order.pickupSlot.windowEnd}
+                      </div>
+                    )}
                   </CardContent>
                 </Card>
 
@@ -232,6 +303,12 @@ export function OrderDetail({ orderId }: { orderId: string }) {
                     <div className='text-muted-foreground'>
                       {order.deliveryAddress?.line1}, {order.deliveryAddress?.city}
                     </div>
+                    {order.deliverySlot && (
+                      <div className='text-muted-foreground pt-1'>
+                        {order.deliverySlot.date} · {order.deliverySlot.windowStart}–
+                        {order.deliverySlot.windowEnd}
+                      </div>
+                    )}
                   </CardContent>
                 </Card>
               </div>

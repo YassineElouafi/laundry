@@ -4,6 +4,7 @@ import {
   CalendarClock,
   Tags,
   Users,
+  Truck,
   CreditCard,
   Settings,
   UserCog,
@@ -56,6 +57,11 @@ export const sidebarData: SidebarData = {
           title: 'Customers',
           url: '/customers',
           icon: Users,
+        },
+        {
+          title: 'Drivers',
+          url: '/drivers',
+          icon: Truck,
         },
         {
           title: 'Payments',

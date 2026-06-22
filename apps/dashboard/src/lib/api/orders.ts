@@ -29,3 +29,14 @@ export async function advanceOrderStatus(
   })
   return data
 }
+
+export async function assignDriver(
+  id: string,
+  driverId: number | string
+): Promise<OrderDto> {
+  const { data } = await api.patch<OrderDto>(
+    `/orders/admin/${id}/assign-driver`,
+    { driverId }
+  )
+  return data
+}

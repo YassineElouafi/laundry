@@ -55,6 +55,23 @@ export class OrderRelationalRepository implements OrderRepository {
     return entities.map((entity) => OrderMapper.toDomain(entity));
   }
 
+  async findAllByDriverWithPagination({
+    driverId,
+    paginationOptions,
+  }: {
+    driverId: User['id'];
+    paginationOptions: IPaginationOptions;
+  }): Promise<Order[]> {
+    const entities = await this.orderRepository.find({
+      where: { driver: { id: Number(driverId) } },
+      order: { createdAt: 'DESC' },
+      skip: (paginationOptions.page - 1) * paginationOptions.limit,
+      take: paginationOptions.limit,
+    });
+
+    return entities.map((entity) => OrderMapper.toDomain(entity));
+  }
+
   async findById(id: Order['id']): Promise<NullableType<Order>> {
     const entity = await this.orderRepository.findOne({
       where: { id: String(id) },

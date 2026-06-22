@@ -53,6 +53,14 @@ export class PaymentsService {
     return { payment };
   }
 
+  findAllWithPagination({
+    paginationOptions,
+  }: {
+    paginationOptions: { page: number; limit: number };
+  }) {
+    return this.paymentRepository.findAllWithPagination({ paginationOptions });
+  }
+
   findById(id: Payment['id']) {
     return this.paymentRepository.findById(id);
   }

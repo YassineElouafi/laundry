@@ -23,6 +23,12 @@ export enum PaymentMethodEnum {
 }
 export type PaymentMethod = `${PaymentMethodEnum}`
 
+export enum DeliveryTypeEnum {
+  doorstep = 'doorstep',
+  concierge = 'concierge',
+}
+export type DeliveryType = `${DeliveryTypeEnum}`
+
 /**
  * Allowed forward transitions for the order lifecycle:
  * SCHEDULED → DRIVER_ASSIGNED → PICKED_UP → AT_FACILITY →

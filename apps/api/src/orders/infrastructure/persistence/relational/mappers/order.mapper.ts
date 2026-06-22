@@ -5,6 +5,7 @@ import { AddressMapper } from '../../../../../addresses/infrastructure/persisten
 import { UserMapper } from '../../../../../users/infrastructure/persistence/relational/mappers/user.mapper';
 import { OrderItemMapper } from '../../../../../order-items/infrastructure/persistence/relational/mappers/order-item.mapper';
 import { OrderEventMapper } from '../../../../../order-events/infrastructure/persistence/relational/mappers/order-event.mapper';
+import { TimeSlotMapper } from '../../../../../time-slots/infrastructure/persistence/relational/mappers/time-slot.mapper';
 
 import { OrderEntity } from '../entities/order.entity';
 
@@ -21,6 +22,10 @@ export class OrderMapper {
 
     domainEntity.status = raw.status;
 
+    domainEntity.deliveryType = raw.deliveryType;
+
+    domainEntity.deliveryFee = raw.deliveryFee;
+
     if (raw.deliveryAddress) {
       domainEntity.deliveryAddress = AddressMapper.toDomain(
         raw.deliveryAddress,
@@ -29,6 +34,18 @@ export class OrderMapper {
 
     if (raw.pickupAddress) {
       domainEntity.pickupAddress = AddressMapper.toDomain(raw.pickupAddress);
+    }
+
+    if (raw.pickupSlot) {
+      domainEntity.pickupSlot = TimeSlotMapper.toDomain(raw.pickupSlot);
+    }
+
+    if (raw.deliverySlot) {
+      domainEntity.deliverySlot = TimeSlotMapper.toDomain(raw.deliverySlot);
+    }
+
+    if (raw.driver) {
+      domainEntity.driver = UserMapper.toDomain(raw.driver);
     }
 
     if (raw.items) {
@@ -66,6 +83,10 @@ export class OrderMapper {
 
     persistenceEntity.status = domainEntity.status;
 
+    persistenceEntity.deliveryType = domainEntity.deliveryType;
+
+    persistenceEntity.deliveryFee = domainEntity.deliveryFee;
+
     if (domainEntity.deliveryAddress) {
       persistenceEntity.deliveryAddress = AddressMapper.toPersistence(
         domainEntity.deliveryAddress,
@@ -76,6 +97,28 @@ export class OrderMapper {
       persistenceEntity.pickupAddress = AddressMapper.toPersistence(
         domainEntity.pickupAddress,
       );
+    }
+
+    if (domainEntity.pickupSlot) {
+      persistenceEntity.pickupSlot = TimeSlotMapper.toPersistence(
+        domainEntity.pickupSlot,
+      );
+    } else if (domainEntity.pickupSlot === null) {
+      persistenceEntity.pickupSlot = null;
+    }
+
+    if (domainEntity.deliverySlot) {
+      persistenceEntity.deliverySlot = TimeSlotMapper.toPersistence(
+        domainEntity.deliverySlot,
+      );
+    } else if (domainEntity.deliverySlot === null) {
+      persistenceEntity.deliverySlot = null;
+    }
+
+    if (domainEntity.driver) {
+      persistenceEntity.driver = UserMapper.toPersistence(domainEntity.driver);
+    } else if (domainEntity.driver === null) {
+      persistenceEntity.driver = null;
     }
 
     // Order items are persisted via cascade when the order is saved.

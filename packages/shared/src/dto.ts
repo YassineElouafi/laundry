@@ -1,6 +1,6 @@
 // API response shapes consumed by the dashboard.
 import type { LocalizedString, PriceType, SlotType } from './catalog'
-import type { OrderStatus, PaymentMethod } from './order'
+import type { DeliveryType, OrderStatus, PaymentMethod } from './order'
 import type { PaymentStatus } from './payment'
 
 export interface AddressDto {
@@ -64,13 +64,18 @@ export interface OrderDto {
   subtotal: number
   total: number
   notes?: string | null
+  deliveryType?: DeliveryType
+  deliveryFee?: number
   createdAt: string
   updatedAt: string
   pickupAddress: AddressDto
   deliveryAddress: AddressDto
+  pickupSlot?: TimeSlotDto | null
+  deliverySlot?: TimeSlotDto | null
   items?: OrderItemDto[]
   events?: OrderEventDto[]
   user?: UserDto
+  driver?: UserDto | null
 }
 
 export interface PaymentDto {

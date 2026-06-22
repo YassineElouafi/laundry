@@ -94,6 +94,13 @@
     "delivery": "Livraison",
     "newSlot": "Nouveau créneau"
   },
+  "drivers": {
+    "title": "Chauffeurs",
+    "subtitle": "Gérez les chauffeurs et les affectations.",
+    "assign": "Assigner un chauffeur",
+    "assigned": "Chauffeur",
+    "unassigned": "Non assigné"
+  },
   "customers": {
     "title": "Clients",
     "subtitle": "Recherchez et consultez les clients.",

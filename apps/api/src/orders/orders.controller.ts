@@ -13,6 +13,7 @@ import {
 import { OrdersService } from './orders.service';
 import { CreateOrderDto } from './dto/create-order.dto';
 import { UpdateOrderStatusDto } from './dto/update-order-status.dto';
+import { AssignDriverDto } from './dto/assign-driver.dto';
 import {
   ApiBearerAuth,
   ApiCreatedResponse,
@@ -90,6 +91,29 @@ export class OrdersController {
     );
   }
 
+  @Get('driver/mine')
+  @Roles(RoleEnum.driver, RoleEnum.admin)
+  @UseGuards(RolesGuard)
+  @ApiOkResponse({ type: InfinityPaginationResponse(Order) })
+  async driverFindMine(
+    @Request() request,
+    @Query() query: FindAllOrdersDto,
+  ): Promise<InfinityPaginationResponseDto<Order>> {
+    const page = query?.page ?? 1;
+    let limit = query?.limit ?? 10;
+    if (limit > 50) {
+      limit = 50;
+    }
+
+    return infinityPagination(
+      await this.ordersService.findAllByDriverWithPagination({
+        driverId: request.user.id,
+        paginationOptions: { page, limit },
+      }),
+      { page, limit },
+    );
+  }
+
   @Get('admin/:id')
   @Roles(RoleEnum.admin, RoleEnum.driver)
   @UseGuards(RolesGuard)
@@ -97,6 +121,18 @@ export class OrdersController {
   @ApiOkResponse({ type: Order })
   adminFindOne(@Param('id') id: string) {
     return this.ordersService.findByIdOrFail(id);
+  }
+
+  @Patch('admin/:id/assign-driver')
+  @Roles(RoleEnum.admin)
+  @UseGuards(RolesGuard)
+  @ApiParam({ name: 'id', type: String, required: true })
+  @ApiOkResponse({ type: Order })
+  assignDriver(
+    @Param('id') id: string,
+    @Body() assignDriverDto: AssignDriverDto,
+  ) {
+    return this.ordersService.assignDriver(id, assignDriverDto.driverId);
   }
 
   @Get(':id')
