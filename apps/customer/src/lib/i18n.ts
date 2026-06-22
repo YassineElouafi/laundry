@@ -1,0 +1,126 @@
+import i18n from 'i18next';
+import { initReactI18next } from 'react-i18next';
+import { getLocales } from 'expo-localization';
+
+const fr = {
+  common: {
+    email: 'E-mail',
+    password: 'Mot de passe',
+    firstName: 'Prénom',
+    lastName: 'Nom',
+    phone: 'Téléphone',
+    save: 'Enregistrer',
+    cancel: 'Annuler',
+    loading: 'Chargement…',
+    retry: 'Réessayer',
+    total: 'Total',
+    confirm: 'Confirmer',
+  },
+  auth: {
+    login: 'Se connecter',
+    register: "S'inscrire",
+    noAccount: 'Pas de compte ? Inscrivez-vous',
+    haveAccount: 'Déjà un compte ? Connectez-vous',
+    welcome: 'Bienvenue',
+    loginError: 'E-mail ou mot de passe invalide.',
+  },
+  tabs: { catalog: 'Services', orders: 'Commandes', profile: 'Profil' },
+  catalog: { title: 'Nos services', perKilo: '/kg', perItem: '/pièce', order: 'Commander', empty: 'Aucun service.' },
+  orders: {
+    title: 'Mes commandes',
+    empty: 'Aucune commande pour le moment.',
+    new: 'Nouvelle commande',
+    timeline: 'Suivi',
+    items: 'Articles',
+    pickup: 'Ramassage',
+    delivery: 'Livraison',
+    payment: 'Paiement',
+    cod: 'À la livraison',
+    cmi: 'Carte (CMI)',
+    place: 'Passer la commande',
+    qty: 'Quantité',
+    addItems: 'Ajoutez des articles',
+    chooseAddress: 'Choisir une adresse',
+    created: 'Commande créée !',
+  },
+  status: {
+    scheduled: 'Planifiée',
+    driver_assigned: 'Chauffeur assigné',
+    picked_up: 'Ramassée',
+    at_facility: 'À la blanchisserie',
+    in_cleaning: 'En nettoyage',
+    ready: 'Prête',
+    out_for_delivery: 'En livraison',
+    delivered: 'Livrée',
+    cancelled: 'Annulée',
+  },
+  profile: { title: 'Profil', logout: 'Déconnexion', language: 'Langue' },
+  address: { title: 'Adresses', add: 'Ajouter une adresse', label: 'Libellé', line1: 'Adresse', city: 'Ville', empty: 'Aucune adresse.' },
+};
+
+const ar: typeof fr = {
+  common: {
+    email: 'البريد الإلكتروني',
+    password: 'كلمة المرور',
+    firstName: 'الاسم',
+    lastName: 'النسب',
+    phone: 'الهاتف',
+    save: 'حفظ',
+    cancel: 'إلغاء',
+    loading: 'جارٍ التحميل…',
+    retry: 'إعادة المحاولة',
+    total: 'المجموع',
+    confirm: 'تأكيد',
+  },
+  auth: {
+    login: 'تسجيل الدخول',
+    register: 'إنشاء حساب',
+    noAccount: 'ليس لديك حساب؟ سجّل',
+    haveAccount: 'لديك حساب؟ سجّل الدخول',
+    welcome: 'مرحبًا',
+    loginError: 'بريد إلكتروني أو كلمة مرور غير صحيحة.',
+  },
+  tabs: { catalog: 'الخدمات', orders: 'الطلبات', profile: 'الملف' },
+  catalog: { title: 'خدماتنا', perKilo: '/كغ', perItem: '/قطعة', order: 'اطلب', empty: 'لا توجد خدمات.' },
+  orders: {
+    title: 'طلباتي',
+    empty: 'لا توجد طلبات بعد.',
+    new: 'طلب جديد',
+    timeline: 'التتبع',
+    items: 'العناصر',
+    pickup: 'الاستلام',
+    delivery: 'التوصيل',
+    payment: 'الدفع',
+    cod: 'عند التسليم',
+    cmi: 'بطاقة (CMI)',
+    place: 'تأكيد الطلب',
+    qty: 'الكمية',
+    addItems: 'أضف عناصر',
+    chooseAddress: 'اختر عنوانًا',
+    created: 'تم إنشاء الطلب!',
+  },
+  status: {
+    scheduled: 'مجدول',
+    driver_assigned: 'تم تعيين سائق',
+    picked_up: 'تم الاستلام',
+    at_facility: 'في المغسلة',
+    in_cleaning: 'قيد التنظيف',
+    ready: 'جاهز',
+    out_for_delivery: 'قيد التوصيل',
+    delivered: 'تم التسليم',
+    cancelled: 'ملغى',
+  },
+  profile: { title: 'الملف', logout: 'تسجيل الخروج', language: 'اللغة' },
+  address: { title: 'العناوين', add: 'إضافة عنوان', label: 'التسمية', line1: 'العنوان', city: 'المدينة', empty: 'لا توجد عناوين.' },
+};
+
+const deviceLang = getLocales()[0]?.languageCode === 'ar' ? 'ar' : 'fr';
+
+void i18n.use(initReactI18next).init({
+  resources: { fr: { translation: fr }, ar: { translation: ar } },
+  lng: deviceLang,
+  fallbackLng: 'fr',
+  interpolation: { escapeValue: false },
+});
+
+export default i18n;

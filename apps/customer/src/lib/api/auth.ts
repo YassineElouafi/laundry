@@ -1,0 +1,39 @@
+import { api } from './client';
+import type { AuthUser } from '../../stores/auth-store';
+import type { UserDto } from '@laundry/shared';
+
+export interface LoginResponse {
+  token: string;
+  refreshToken: string;
+  tokenExpires: number;
+  user: UserDto;
+}
+
+export function toAuthUser(u: UserDto): AuthUser {
+  return {
+    id: u.id,
+    email: u.email,
+    firstName: u.firstName,
+    lastName: u.lastName,
+    role: (u.role?.name ?? '').toLowerCase(),
+  };
+}
+
+export async function login(email: string, password: string): Promise<LoginResponse> {
+  const { data } = await api.post<LoginResponse>('/auth/email/login', { email, password });
+  return data;
+}
+
+export async function register(input: {
+  email: string;
+  password: string;
+  firstName: string;
+  lastName: string;
+}): Promise<void> {
+  await api.post('/auth/email/register', input);
+}
+
+export async function fetchMe(): Promise<UserDto> {
+  const { data } = await api.get<UserDto>('/auth/me');
+  return data;
+}
