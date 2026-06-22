@@ -6,7 +6,7 @@ A kickstart guide for the back-office / admin dashboard, designed to pair with y
 
 ## 1. Recommended Boilerplate
 
-Use **`satnaing/shadcn-admin`** — the most popular shadcn admin template, actively maintained, Vite-based (clean fit for a separate NestJS API), and it already includes RTL direction support.
+Use **`satnaing/shadcn-admin`** — the most popular laundry template, actively maintained, Vite-based (clean fit for a separate NestJS API), and it already includes RTL direction support.
 
 **Repo:** https://github.com/satnaing/shadcn-admin
 **Stars:** ~12.4k · **Updated:** daily
