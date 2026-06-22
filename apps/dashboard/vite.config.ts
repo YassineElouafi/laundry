@@ -19,6 +19,13 @@ export default defineConfig({
   resolve: {
     alias: {
       '@': path.resolve(__dirname, './src'),
+      // Resolve the shared workspace package to its TS source so Vite compiles
+      // it directly (the CJS dist re-exports don't surface named exports under
+      // the dev ESM transform).
+      '@laundry/shared': path.resolve(
+        __dirname,
+        '../../packages/shared/src/index.ts'
+      ),
     },
   },
   test: {

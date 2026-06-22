@@ -1,47 +1,7 @@
-// Shared API types mirroring the NestJS backend domain.
-
-export type LocalizedString = { fr?: string; ar?: string; en?: string }
-
-export type OrderStatus =
-  | 'scheduled'
-  | 'driver_assigned'
-  | 'picked_up'
-  | 'at_facility'
-  | 'in_cleaning'
-  | 'ready'
-  | 'out_for_delivery'
-  | 'delivered'
-  | 'cancelled'
-
-export type PaymentMethod = 'cod' | 'cmi'
-export type PaymentStatus = 'pending' | 'paid' | 'failed' | 'refunded'
-export type PriceType = 'per_kilo' | 'per_item'
-export type SlotType = 'pickup' | 'delivery'
-
-export const ORDER_STATUSES: OrderStatus[] = [
-  'scheduled',
-  'driver_assigned',
-  'picked_up',
-  'at_facility',
-  'in_cleaning',
-  'ready',
-  'out_for_delivery',
-  'delivered',
-  'cancelled',
-]
-
-// Mirrors the backend ORDER_TRANSITIONS graph so the UI only offers valid moves.
-export const ORDER_TRANSITIONS: Record<OrderStatus, OrderStatus[]> = {
-  scheduled: ['driver_assigned', 'cancelled'],
-  driver_assigned: ['picked_up', 'cancelled'],
-  picked_up: ['at_facility', 'cancelled'],
-  at_facility: ['in_cleaning', 'cancelled'],
-  in_cleaning: ['ready'],
-  ready: ['out_for_delivery'],
-  out_for_delivery: ['delivered'],
-  delivered: [],
-  cancelled: [],
-}
+// API response shapes consumed by the dashboard.
+import type { LocalizedString, PriceType, SlotType } from './catalog'
+import type { OrderStatus, PaymentMethod } from './order'
+import type { PaymentStatus } from './payment'
 
 export interface AddressDto {
   id: string
@@ -137,11 +97,4 @@ export interface TimeSlotDto {
 export interface InfinityPaginated<T> {
   data: T[]
   hasNextPage: boolean
-}
-
-/** Render a localized name, preferring the active UI language. */
-export function localized(name: LocalizedString, lang: string): string {
-  if (!name) return ''
-  const key = lang.startsWith('ar') ? 'ar' : 'fr'
-  return name[key] ?? name.fr ?? name.en ?? name.ar ?? ''
 }

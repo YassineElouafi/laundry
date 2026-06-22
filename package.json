@@ -1,0 +1,17 @@
+{
+  "name": "laundry-monorepo",
+  "version": "1.0.0",
+  "private": true,
+  "packageManager": "pnpm@10.16.1",
+  "engines": {
+    "node": ">=20"
+  },
+  "scripts": {
+    "build:shared": "pnpm --filter @laundry/shared build",
+    "build": "pnpm --filter @laundry/shared build && pnpm --filter @laundry/api build && pnpm --filter @laundry/dashboard build",
+    "dev:api": "pnpm --filter @laundry/api start:dev",
+    "dev:dashboard": "pnpm --filter @laundry/dashboard dev",
+    "typecheck:dashboard": "pnpm --filter @laundry/dashboard exec tsc -b --noEmit",
+    "lint": "pnpm -r --filter './apps/*' lint"
+  }
+}

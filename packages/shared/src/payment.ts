@@ -4,3 +4,4 @@ export enum PaymentStatusEnum {
   failed = 'failed',
   refunded = 'refunded',
 }
+export type PaymentStatus = `${PaymentStatusEnum}`
