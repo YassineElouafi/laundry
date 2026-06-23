@@ -7,6 +7,7 @@ import {
   View,
 } from 'react-native';
 import { useRouter } from 'expo-router';
+import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { useTranslation } from 'react-i18next';
 import { localized } from '@laundry/shared';
 import { listServiceItems } from '../../lib/api/resources';
@@ -18,6 +19,7 @@ import { colors, radius, spacing } from '../../theme';
 export default function CatalogScreen() {
   const { t, i18n } = useTranslation();
   const router = useRouter();
+  const insets = useSafeAreaInsets();
   const { data, loading, error, reload } = useAsync(listServiceItems, []);
   const lines = useCartStore((s) => s.lines);
   const add = useCartStore((s) => s.add);
@@ -46,7 +48,11 @@ export default function CatalogScreen() {
       <FlatList
         data={data ?? []}
         keyExtractor={(it) => it.id}
-        contentContainerStyle={{ padding: spacing.md, paddingBottom: 120, gap: spacing.sm }}
+        contentContainerStyle={{
+          padding: spacing.md,
+          paddingBottom: insets.bottom + (count > 0 ? 170 : 100),
+          gap: spacing.sm,
+        }}
         ListEmptyComponent={<Text style={styles.muted}>{t('catalog.empty')}</Text>}
         renderItem={({ item }) => {
           const qty = lines[item.id]?.qty ?? 0;
@@ -79,7 +85,7 @@ export default function CatalogScreen() {
         }}
       />
       {count > 0 && (
-        <View style={styles.bar}>
+        <View style={[styles.bar, { bottom: Math.max(insets.bottom - 8, 4) + 66 + spacing.sm }]}>
           <Button
             title={`${t('orders.new')} · ${count} · ${total} MAD`}
             onPress={() => router.push('/order/new')}
@@ -111,5 +117,5 @@ const styles = StyleSheet.create({
   step: { width: 34, height: 34, borderRadius: radius.pill, backgroundColor: colors.primary, alignItems: 'center', justifyContent: 'center' },
   stepText: { color: colors.primaryText, fontSize: 18, fontWeight: '700' },
   qty: { minWidth: 24, textAlign: 'center', fontSize: 16, fontWeight: '600', color: colors.text },
-  bar: { position: 'absolute', left: 0, right: 0, bottom: 0, padding: spacing.md, backgroundColor: colors.bg, borderTopWidth: 1, borderTopColor: colors.border },
+  bar: { position: 'absolute', left: spacing.lg, right: spacing.lg },
 });

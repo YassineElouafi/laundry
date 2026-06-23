@@ -8,6 +8,7 @@ import {
   View,
 } from 'react-native';
 import { useFocusEffect, useRouter } from 'expo-router';
+import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { useTranslation } from 'react-i18next';
 import { type OrderStatus } from '@laundry/shared';
 import { listMyOrders } from '../../lib/api/resources';
@@ -18,6 +19,7 @@ import { STATUS_COLOR, colors, radius, spacing } from '../../theme';
 export default function OrdersScreen() {
   const { t } = useTranslation();
   const router = useRouter();
+  const insets = useSafeAreaInsets();
   const { data, loading, reload } = useAsync(listMyOrders, []);
 
   // Refresh when returning to this tab (e.g. after placing an order).
@@ -40,7 +42,7 @@ export default function OrdersScreen() {
       <FlatList
         data={data ?? []}
         keyExtractor={(o) => o.id}
-        contentContainerStyle={{ padding: spacing.md, gap: spacing.sm }}
+        contentContainerStyle={{ padding: spacing.md, paddingBottom: insets.bottom + 100, gap: spacing.sm }}
         ListEmptyComponent={<Text style={styles.muted}>{t('orders.empty')}</Text>}
         renderItem={({ item }) => {
           const status = item.status as OrderStatus;

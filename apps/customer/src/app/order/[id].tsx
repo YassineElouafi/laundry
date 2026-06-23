@@ -11,6 +11,7 @@ import { localized, type OrderStatus } from '@laundry/shared';
 import { getMyOrder } from '../../lib/api/resources';
 import { useAsync } from '../../lib/use-async';
 import { Badge, Card } from '../../components/ui';
+import { CheckIcon } from '../../components/icons';
 import { STATUS_COLOR, colors, spacing } from '../../theme';
 
 export default function OrderTrackingScreen() {
@@ -56,16 +57,24 @@ export default function OrderTrackingScreen() {
 
       <Card>
         <Text style={styles.h}>{t('orders.timeline')}</Text>
-        {events.map((ev) => (
-          <View key={ev.id} style={styles.event}>
-            <View style={[styles.dot, { backgroundColor: STATUS_COLOR[ev.status as OrderStatus] }]} />
-            <View style={{ flex: 1 }}>
-              <Text style={styles.eventStatus}>{t(`status.${ev.status as OrderStatus}`)}</Text>
-              <Text style={styles.muted}>{new Date(ev.createdAt).toLocaleString()}</Text>
-              {ev.note ? <Text style={styles.muted}>{ev.note}</Text> : null}
+        {events.map((ev, i) => {
+          const last = i === events.length - 1;
+          return (
+            <View key={ev.id} style={styles.event}>
+              <View style={styles.timelineCol}>
+                <View style={styles.check}>
+                  <CheckIcon size={16} color={colors.primaryText} />
+                </View>
+                {!last && <View style={styles.connector} />}
+              </View>
+              <View style={{ flex: 1, paddingBottom: last ? 0 : spacing.md }}>
+                <Text style={styles.eventStatus}>{t(`status.${ev.status as OrderStatus}`)}</Text>
+                <Text style={styles.muted}>{new Date(ev.createdAt).toLocaleString()}</Text>
+                {ev.note ? <Text style={styles.muted}>{ev.note}</Text> : null}
+              </View>
             </View>
-          </View>
-        ))}
+          );
+        })}
       </Card>
     </ScrollView>
   );
@@ -81,8 +90,17 @@ const styles = StyleSheet.create({
   lineText: { color: colors.text },
   totalRow: { borderTopWidth: 1, borderTopColor: colors.border, paddingTop: spacing.sm, marginTop: spacing.sm },
   total: { fontWeight: '700', color: colors.text },
-  event: { flexDirection: 'row', gap: spacing.sm, paddingVertical: spacing.sm },
-  dot: { width: 12, height: 12, borderRadius: 6, marginTop: 4 },
-  eventStatus: { fontWeight: '600', color: colors.text },
+  event: { flexDirection: 'row', gap: spacing.md },
+  timelineCol: { alignItems: 'center' },
+  check: {
+    width: 28,
+    height: 28,
+    borderRadius: 14,
+    backgroundColor: colors.primary,
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  connector: { flex: 1, width: 2, backgroundColor: colors.border, marginVertical: 2 },
+  eventStatus: { fontWeight: '700', color: colors.text },
   muted: { color: colors.muted, marginTop: 2, fontSize: 12 },
 });

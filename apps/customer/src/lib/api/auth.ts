@@ -15,8 +15,23 @@ export function toAuthUser(u: UserDto): AuthUser {
     email: u.email,
     firstName: u.firstName,
     lastName: u.lastName,
+    phone: u.phone,
     role: (u.role?.name ?? '').toLowerCase(),
   };
+}
+
+export interface UpdateProfileInput {
+  firstName?: string;
+  lastName?: string;
+  phone?: string | null;
+  email?: string;
+  password?: string;
+  oldPassword?: string;
+}
+
+export async function updateProfile(input: UpdateProfileInput): Promise<UserDto> {
+  const { data } = await api.patch<UserDto>('/auth/me', input);
+  return data;
 }
 
 export async function login(email: string, password: string): Promise<LoginResponse> {

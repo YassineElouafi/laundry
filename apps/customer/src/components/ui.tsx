@@ -62,6 +62,84 @@ export function Field({
   );
 }
 
+export function SoftField({
+  rightSlot,
+  containerStyle,
+  ...props
+}: TextInputProps & { rightSlot?: ReactNode; containerStyle?: object }) {
+  return (
+    <View style={[styles.softField, containerStyle]}>
+      <TextInput
+        placeholderTextColor={colors.muted}
+        style={styles.softInput}
+        {...props}
+      />
+      {rightSlot ? <View style={styles.softRight}>{rightSlot}</View> : null}
+    </View>
+  );
+}
+
+export function PrimaryButton({
+  title,
+  onPress,
+  loading,
+  disabled,
+}: {
+  title: string;
+  onPress: () => void;
+  loading?: boolean;
+  disabled?: boolean;
+}) {
+  const off = disabled || loading;
+  return (
+    <Pressable
+      onPress={onPress}
+      disabled={off}
+      style={({ pressed }) => [
+        styles.primaryBtn,
+        off && styles.primaryBtnOff,
+        pressed && !off && { opacity: 0.9 },
+      ]}
+    >
+      {loading ? (
+        <ActivityIndicator color={colors.primaryText} />
+      ) : (
+        <Text style={[styles.primaryBtnText, off && styles.primaryBtnTextOff]}>{title}</Text>
+      )}
+    </Pressable>
+  );
+}
+
+export function SocialButton({
+  label,
+  icon,
+  onPress,
+}: {
+  label: string;
+  icon: ReactNode;
+  onPress: () => void;
+}) {
+  return (
+    <Pressable
+      onPress={onPress}
+      style={({ pressed }) => [styles.socialBtn, pressed && { opacity: 0.7 }]}
+    >
+      {icon}
+      <Text style={styles.socialText}>{label}</Text>
+    </Pressable>
+  );
+}
+
+export function OrDivider({ label }: { label: string }) {
+  return (
+    <View style={styles.dividerRow}>
+      <View style={styles.dividerLine} />
+      <Text style={styles.dividerText}>{label}</Text>
+      <View style={styles.dividerLine} />
+    </View>
+  );
+}
+
 export function Card({ children, style }: { children: ReactNode; style?: object }) {
   return <View style={[styles.card, style]}>{children}</View>;
 }
@@ -96,6 +174,46 @@ const styles = StyleSheet.create({
     fontSize: 16,
     color: colors.text,
   },
+  softField: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    backgroundColor: colors.inputBg,
+    borderRadius: radius.lg,
+    paddingHorizontal: 18,
+    minHeight: 60,
+  },
+  softInput: {
+    flex: 1,
+    fontSize: 16,
+    color: colors.text,
+    paddingVertical: 18,
+  },
+  softRight: { marginLeft: spacing.sm },
+  primaryBtn: {
+    height: 58,
+    borderRadius: radius.lg,
+    backgroundColor: colors.primary,
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  primaryBtnOff: { backgroundColor: colors.disabledBg },
+  primaryBtnText: { color: colors.primaryText, fontSize: 17, fontWeight: '700' },
+  primaryBtnTextOff: { color: colors.disabledText },
+  socialBtn: {
+    height: 56,
+    borderRadius: radius.lg,
+    borderWidth: 1,
+    borderColor: colors.border,
+    backgroundColor: colors.card,
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'center',
+    gap: spacing.sm,
+  },
+  socialText: { color: colors.social, fontSize: 16, fontWeight: '700' },
+  dividerRow: { flexDirection: 'row', alignItems: 'center', gap: spacing.md },
+  dividerLine: { flex: 1, height: 1, backgroundColor: colors.border },
+  dividerText: { color: colors.muted, fontSize: 14 },
   card: {
     backgroundColor: colors.card,
     borderRadius: radius.md,
