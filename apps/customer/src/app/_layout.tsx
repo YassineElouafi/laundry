@@ -24,7 +24,7 @@ export default function RootLayout() {
     if (!hydrated) return;
     const inAuth = segments[0] === '(auth)';
     if (!accessToken && !inAuth) {
-      router.replace('/(auth)/login');
+      router.replace('/(auth)');
     } else if (accessToken && inAuth) {
       router.replace('/(tabs)');
     }
