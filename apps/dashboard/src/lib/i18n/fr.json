@@ -99,7 +99,16 @@
     "subtitle": "Gérez les chauffeurs et les affectations.",
     "assign": "Assigner un chauffeur",
     "assigned": "Chauffeur",
-    "unassigned": "Non assigné"
+    "unassigned": "Non assigné",
+    "add": "Ajouter un chauffeur",
+    "new": "Nouveau chauffeur",
+    "firstName": "Prénom",
+    "lastName": "Nom",
+    "email": "E-mail",
+    "phone": "Téléphone",
+    "password": "Mot de passe",
+    "created": "Chauffeur créé.",
+    "createError": "Échec de la création du chauffeur."
   },
   "customers": {
     "title": "Clients",

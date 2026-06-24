@@ -1,10 +1,11 @@
 import { useMemo, useState } from 'react'
 import { useQuery } from '@tanstack/react-query'
-import { MessageCircle } from 'lucide-react'
+import { MessageCircle, Plus } from 'lucide-react'
 import { useTranslation } from 'react-i18next'
 import { listDrivers } from '@/lib/api/users'
 import { Button } from '@/components/ui/button'
 import { Input } from '@/components/ui/input'
+import { DriverDialog } from './components/driver-dialog'
 import {
   Table,
   TableBody,
@@ -26,6 +27,7 @@ function waLink(phone: string): string {
 export function Drivers() {
   const { t } = useTranslation()
   const [search, setSearch] = useState('')
+  const [dialogOpen, setDialogOpen] = useState(false)
   const { data, isLoading } = useQuery({
     queryKey: ['drivers'],
     queryFn: listDrivers,
@@ -52,11 +54,17 @@ export function Drivers() {
         </div>
       </Header>
       <Main>
-        <div className='mb-4'>
-          <h1 className='text-2xl font-bold tracking-tight'>
-            {t('drivers.title')}
-          </h1>
-          <p className='text-muted-foreground'>{t('drivers.subtitle')}</p>
+        <div className='mb-4 flex items-start justify-between gap-4'>
+          <div>
+            <h1 className='text-2xl font-bold tracking-tight'>
+              {t('drivers.title')}
+            </h1>
+            <p className='text-muted-foreground'>{t('drivers.subtitle')}</p>
+          </div>
+          <Button onClick={() => setDialogOpen(true)}>
+            <Plus className='size-4' />
+            {t('drivers.add')}
+          </Button>
         </div>
 
         <div className='mb-4'>
@@ -119,6 +127,8 @@ export function Drivers() {
             </TableBody>
           </Table>
         </div>
+
+        <DriverDialog open={dialogOpen} onOpenChange={setDialogOpen} />
       </Main>
     </>
   )

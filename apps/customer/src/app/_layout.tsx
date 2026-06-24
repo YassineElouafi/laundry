@@ -65,7 +65,7 @@ export default function RootLayout() {
           <Stack.Screen name="(auth)" />
           <Stack.Screen name="(tabs)" />
           <Stack.Screen name="order/new" options={{ ...headerOptions, title: t('orders.new') }} />
-          <Stack.Screen name="order/[id]" options={{ ...headerOptions, title: t('orders.timeline') }} />
+          <Stack.Screen name="order/[id]" options={{ headerShown: false }} />
           <Stack.Screen name="account/edit" options={{ ...headerOptions, title: t('profile.editTitle') }} />
         </Stack>
         {showLock && <LockScreen />}
