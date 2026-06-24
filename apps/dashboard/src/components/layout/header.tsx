@@ -45,10 +45,8 @@ export function Header({ className, fixed, children, ...props }: HeaderProps) {
       >
         <SidebarTrigger variant='outline' className='max-md:scale-125' />
         <Separator orientation='vertical' className='h-6' />
-        <Search />
-        <div className='ms-auto'>
-          <NotificationBell />
-        </div>
+        <Search className='me-auto' />
+        <NotificationBell />
         {children}
       </div>
     </header>

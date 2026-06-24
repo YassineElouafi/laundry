@@ -17,6 +17,7 @@ import { listMyOrders, listServiceItems } from '../../lib/api/resources'
 import { useAsync } from '../../lib/use-async'
 import { cartCount, cartTotal, useCartStore } from '../../stores/cart-store'
 import { useAuthStore } from '../../stores/auth-store'
+import { DriverHome } from '../../components/driver-home'
 import { useNotifStore } from '../../stores/notif-store'
 import { buildNotifications, countUnread } from '../../lib/notifications'
 import { Badge, Button } from '../../components/ui'
@@ -36,6 +37,7 @@ export default function HomeScreen() {
   const router = useRouter()
   const insets = useSafeAreaInsets()
   const user = useAuthStore((s) => s.user)
+  const isDriver = user?.role === 'driver'
   const services = useAsync(listServiceItems, [])
   const orders = useAsync(listMyOrders, [])
   const [query, setQuery] = useState('')
@@ -65,6 +67,9 @@ export default function HomeScreen() {
     (s) => !q || localized(s.name, i18n.language).toLowerCase().includes(q)
   )
   const recent = (orders.data ?? []).slice(0, 4)
+
+  // Drivers get a delivery-focused home instead of the customer storefront.
+  if (isDriver) return <DriverHome />
 
   return (
     <View style={styles.container}>

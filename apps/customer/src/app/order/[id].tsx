@@ -1,3 +1,4 @@
+import { useState } from 'react';
 import {
   ActivityIndicator,
   Alert,
@@ -15,8 +16,10 @@ import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { LinearGradient } from 'expo-linear-gradient';
 import { useTranslation } from 'react-i18next';
 import { type OrderStatus } from '@laundry/shared';
-import { getMyOrder } from '../../lib/api/resources';
+import { advanceOrderStatus, getMyOrder, getOrderAsStaff } from '../../lib/api/resources';
 import { useAsync } from '../../lib/use-async';
+import { nextStatus } from '../../lib/order-flow';
+import { useAuthStore } from '../../stores/auth-store';
 import {
   ArrowLeftIcon,
   BikeIcon,
@@ -45,7 +48,12 @@ export default function OrderTrackingScreen() {
   const { t } = useTranslation();
   const router = useRouter();
   const insets = useSafeAreaInsets();
-  const { data: order, loading } = useAsync(() => getMyOrder(String(id)), [id]);
+  const isDriver = useAuthStore((s) => s.user?.role) === 'driver';
+  const { data: order, loading, reload } = useAsync(
+    () => (isDriver ? getOrderAsStaff(String(id)) : getMyOrder(String(id))),
+    [id, isDriver]
+  );
+  const [busy, setBusy] = useState(false);
 
   if (loading && !order) {
     return (
@@ -77,11 +85,25 @@ export default function OrderTrackingScreen() {
     void Linking.openURL(`sms:${driver.phone}`);
   }
 
+  const next = nextStatus(status);
+  async function advance() {
+    if (!next || busy) return;
+    setBusy(true);
+    try {
+      await advanceOrderStatus(String(id), next);
+      await reload();
+    } catch {
+      Alert.alert(t('driver.deliveries'), t('driver.updateError'));
+    } finally {
+      setBusy(false);
+    }
+  }
+
   return (
     <View style={styles.container}>
       <StatusBar style="light" />
       <ScrollView
-        contentContainerStyle={{ paddingBottom: insets.bottom + spacing.xl }}
+        contentContainerStyle={{ paddingBottom: insets.bottom + (isDriver && next ? 110 : spacing.xl) }}
         showsVerticalScrollIndicator={false}
       >
         {/* Hero image with header + driver card */}
@@ -180,6 +202,25 @@ export default function OrderTrackingScreen() {
           </View>
         </View>
       </ScrollView>
+
+      {/* Driver action: advance the order to its next status. */}
+      {isDriver && next && (
+        <View style={[styles.actionBar, { paddingBottom: insets.bottom + spacing.sm }]}>
+          <Pressable
+            style={({ pressed }) => [styles.advanceBtn, (pressed || busy) && { opacity: 0.85 }]}
+            onPress={advance}
+            disabled={busy}
+          >
+            {busy ? (
+              <ActivityIndicator color={colors.primaryText} />
+            ) : (
+              <Text style={styles.advanceText}>
+                {t('driver.advance')}: {t(`status.${next}`)}
+              </Text>
+            )}
+          </Pressable>
+        </View>
+      )}
     </View>
   );
 }
@@ -262,4 +303,23 @@ const styles = StyleSheet.create({
   stepLabel: { color: colors.text, fontSize: 17, fontWeight: '700', marginTop: spacing.sm },
   stepLabelMuted: { color: colors.muted },
   stepSub: { color: colors.muted, fontSize: 13, marginTop: 2 },
+  actionBar: {
+    position: 'absolute',
+    left: 0,
+    right: 0,
+    bottom: 0,
+    paddingHorizontal: spacing.lg,
+    paddingTop: spacing.md,
+    backgroundColor: colors.bg,
+    borderTopWidth: 1,
+    borderTopColor: colors.border,
+  },
+  advanceBtn: {
+    height: 54,
+    borderRadius: radius.pill,
+    backgroundColor: colors.primary,
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  advanceText: { color: colors.primaryText, fontSize: 16, fontWeight: '700' },
 });

@@ -2,11 +2,13 @@ import { Tabs } from 'expo-router';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { useTranslation } from 'react-i18next';
 import { BagIcon, HomeIcon, UserIcon } from '../../components/icons';
+import { useAuthStore } from '../../stores/auth-store';
 import { colors } from '../../theme';
 
 export default function TabsLayout() {
   const { t } = useTranslation();
   const insets = useSafeAreaInsets();
+  const isDriver = useAuthStore((s) => s.user?.role) === 'driver';
 
   return (
     <Tabs
@@ -46,7 +48,7 @@ export default function TabsLayout() {
       <Tabs.Screen
         name="index"
         options={{
-          title: t('tabs.home'),
+          title: isDriver ? t('driver.deliveries') : t('tabs.home'),
           headerShown: false,
           tabBarIcon: ({ color }) => <HomeIcon size={24} color={color} />,
         }}
@@ -54,7 +56,7 @@ export default function TabsLayout() {
       <Tabs.Screen
         name="orders"
         options={{
-          title: t('tabs.orders'),
+          title: isDriver ? t('driver.history') : t('tabs.orders'),
           tabBarIcon: ({ color }) => <BagIcon size={24} color={color} />,
         }}
       />

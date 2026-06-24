@@ -3,6 +3,7 @@ import type {
   AddressDto,
   InfinityPaginated,
   OrderDto,
+  OrderStatus,
   PaymentMethod,
   ServiceItemDto,
 } from '@laundry/shared';
@@ -43,6 +44,29 @@ export async function listMyOrders(): Promise<OrderDto[]> {
 
 export async function getMyOrder(id: string): Promise<OrderDto> {
   const { data } = await api.get<OrderDto>(`/orders/${id}`);
+  return data;
+}
+
+// --- Driver-scoped ---
+export async function listDriverOrders(): Promise<OrderDto[]> {
+  const { data } = await api.get<InfinityPaginated<OrderDto>>('/orders/driver/mine', {
+    params: { limit: 50 },
+  });
+  return data.data;
+}
+
+/** Order detail for a driver/admin (the owner-scoped GET /orders/:id would 403 for a driver). */
+export async function getOrderAsStaff(id: string): Promise<OrderDto> {
+  const { data } = await api.get<OrderDto>(`/orders/admin/${id}`);
+  return data;
+}
+
+export async function advanceOrderStatus(
+  id: string,
+  status: OrderStatus,
+  note?: string
+): Promise<OrderDto> {
+  const { data } = await api.patch<OrderDto>(`/orders/${id}/status`, { status, note });
   return data;
 }
 

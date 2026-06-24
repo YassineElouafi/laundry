@@ -11,8 +11,9 @@ import { useFocusEffect, useRouter } from 'expo-router';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { useTranslation } from 'react-i18next';
 import { type OrderStatus } from '@laundry/shared';
-import { listMyOrders } from '../../lib/api/resources';
+import { listDriverOrders, listMyOrders } from '../../lib/api/resources';
 import { useAsync } from '../../lib/use-async';
+import { useAuthStore } from '../../stores/auth-store';
 import { Badge } from '../../components/ui';
 import { STATUS_COLOR, colors, radius, spacing } from '../../theme';
 
@@ -20,7 +21,8 @@ export default function OrdersScreen() {
   const { t } = useTranslation();
   const router = useRouter();
   const insets = useSafeAreaInsets();
-  const { data, loading, reload } = useAsync(listMyOrders, []);
+  const isDriver = useAuthStore((s) => s.user?.role) === 'driver';
+  const { data, loading, reload } = useAsync(isDriver ? listDriverOrders : listMyOrders, [isDriver]);
 
   // Refresh when returning to this tab (e.g. after placing an order).
   useFocusEffect(
