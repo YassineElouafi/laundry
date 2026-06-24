@@ -14,7 +14,7 @@ import * as Linking from 'expo-linking';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { LinearGradient } from 'expo-linear-gradient';
 import { useTranslation } from 'react-i18next';
-import { localized, type OrderStatus } from '@laundry/shared';
+import { type OrderStatus } from '@laundry/shared';
 import { getMyOrder } from '../../lib/api/resources';
 import { useAsync } from '../../lib/use-async';
 import {
@@ -42,10 +42,10 @@ const FLOW: OrderStatus[] = [
 
 export default function OrderTrackingScreen() {
   const { id } = useLocalSearchParams<{ id: string }>();
-  const { t, i18n } = useTranslation();
+  const { t } = useTranslation();
   const router = useRouter();
   const insets = useSafeAreaInsets();
-  const { data: order, loading, reload } = useAsync(() => getMyOrder(String(id)), [id]);
+  const { data: order, loading } = useAsync(() => getMyOrder(String(id)), [id]);
 
   if (loading && !order) {
     return (
@@ -77,25 +77,13 @@ export default function OrderTrackingScreen() {
     void Linking.openURL(`sms:${driver.phone}`);
   }
 
-  function showReceipt() {
-    const lines = (order!.items ?? [])
-      .map((it) => `${it.quantity}× ${localized(it.serviceItem.name, i18n.language)}   ${it.lineTotal} MAD`)
-      .join('\n');
-    Alert.alert(
-      `#${order!.id.slice(0, 8)}`,
-      `${lines}\n\n${t('common.total')}: ${order!.total} MAD`
-    );
-  }
-
-  async function refresh() {
-    await reload();
-    Alert.alert(t('track.title'), t('track.refreshed'));
-  }
-
   return (
     <View style={styles.container}>
       <StatusBar style="light" />
-      <ScrollView contentContainerStyle={{ paddingBottom: spacing.md }} showsVerticalScrollIndicator={false}>
+      <ScrollView
+        contentContainerStyle={{ paddingBottom: insets.bottom + spacing.xl }}
+        showsVerticalScrollIndicator={false}
+      >
         {/* Hero image with header + driver card */}
         <ImageBackground source={HERO} style={styles.hero}>
           <LinearGradient
@@ -123,10 +111,10 @@ export default function OrderTrackingScreen() {
                   <Text style={styles.driverRole}>{t('track.driverRole')}</Text>
                 </View>
                 <Pressable onPress={messageDriver} style={styles.driverAction} hitSlop={6}>
-                  <ChatIcon size={18} color={colors.primaryText} />
+                  <ChatIcon size={18} color={colors.primary} />
                 </Pressable>
                 <Pressable onPress={callDriver} style={styles.driverAction} hitSlop={6}>
-                  <PhoneIcon size={18} color={colors.primaryText} />
+                  <PhoneIcon size={18} color={colors.primary} />
                 </Pressable>
               </View>
             ) : (
@@ -192,16 +180,6 @@ export default function OrderTrackingScreen() {
           </View>
         </View>
       </ScrollView>
-
-      {/* Bottom actions */}
-      <View style={[styles.actions, { paddingBottom: insets.bottom + spacing.sm }]}>
-        <Pressable onPress={showReceipt} style={({ pressed }) => [styles.btnOutline, pressed && { opacity: 0.8 }]}>
-          <Text style={styles.btnOutlineText}>{t('track.receipt')}</Text>
-        </Pressable>
-        <Pressable onPress={refresh} style={({ pressed }) => [styles.btnPrimary, pressed && { opacity: 0.9 }]}>
-          <Text style={styles.btnPrimaryText}>{t('track.tracking')}</Text>
-        </Pressable>
-      </View>
     </View>
   );
 }
@@ -284,32 +262,4 @@ const styles = StyleSheet.create({
   stepLabel: { color: colors.text, fontSize: 17, fontWeight: '700', marginTop: spacing.sm },
   stepLabelMuted: { color: colors.muted },
   stepSub: { color: colors.muted, fontSize: 13, marginTop: 2 },
-  actions: {
-    flexDirection: 'row',
-    gap: spacing.md,
-    paddingHorizontal: spacing.lg,
-    paddingTop: spacing.md,
-    borderTopWidth: 1,
-    borderTopColor: colors.border,
-    backgroundColor: colors.bg,
-  },
-  btnOutline: {
-    flex: 1,
-    height: 54,
-    borderRadius: radius.pill,
-    borderWidth: 1,
-    borderColor: colors.primary,
-    alignItems: 'center',
-    justifyContent: 'center',
-  },
-  btnOutlineText: { color: colors.primary, fontSize: 16, fontWeight: '700' },
-  btnPrimary: {
-    flex: 1,
-    height: 54,
-    borderRadius: radius.pill,
-    backgroundColor: colors.primary,
-    alignItems: 'center',
-    justifyContent: 'center',
-  },
-  btnPrimaryText: { color: colors.primaryText, fontSize: 16, fontWeight: '700' },
 });

@@ -132,5 +132,10 @@
     "paid": "Payé",
     "failed": "Échoué",
     "refunded": "Remboursé"
+  },
+  "notif": {
+    "title": "Notifications",
+    "empty": "Aucune notification.",
+    "order": "Commande"
   }
 }

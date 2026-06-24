@@ -7,6 +7,8 @@ import { GestureHandlerRootView } from 'react-native-gesture-handler';
 import { SafeAreaProvider } from 'react-native-safe-area-context';
 import { useTranslation } from 'react-i18next';
 import { useAuthStore } from '../stores/auth-store';
+import { useNotifStore } from '../stores/notif-store';
+import { fetchMe, toAuthUser } from '../lib/api/auth';
 import { LockScreen } from '../components/lock-screen';
 import { colors } from '../theme';
 
@@ -18,12 +20,25 @@ export default function RootLayout() {
   const accessToken = useAuthStore((s) => s.accessToken);
   const biometricEnabled = useAuthStore((s) => s.biometricEnabled);
   const locked = useAuthStore((s) => s.locked);
+  const user = useAuthStore((s) => s.user);
   const hydrate = useAuthStore((s) => s.hydrate);
+  const setUser = useAuthStore((s) => s.setUser);
   const lock = useAuthStore((s) => s.lock);
+  const hydrateNotif = useNotifStore((s) => s.hydrate);
 
   useEffect(() => {
     void hydrate();
-  }, [hydrate]);
+    void hydrateNotif();
+  }, [hydrate, hydrateNotif]);
+
+  // Restore the current user on cold start (hydrate only restores tokens).
+  useEffect(() => {
+    if (hydrated && accessToken && !user) {
+      fetchMe()
+        .then((u) => setUser(toAuthUser(u)))
+        .catch(() => {});
+    }
+  }, [hydrated, accessToken, user, setUser]);
 
   useEffect(() => {
     if (!hydrated) return;
@@ -64,6 +79,8 @@ export default function RootLayout() {
         <Stack screenOptions={{ headerShown: false, contentStyle: { backgroundColor: colors.bg } }}>
           <Stack.Screen name="(auth)" />
           <Stack.Screen name="(tabs)" />
+          <Stack.Screen name="catalog" options={{ ...headerOptions, title: t('catalog.title') }} />
+          <Stack.Screen name="notifications" options={{ ...headerOptions, title: t('notif.title') }} />
           <Stack.Screen name="order/new" options={{ ...headerOptions, title: t('orders.new') }} />
           <Stack.Screen name="order/[id]" options={{ headerShown: false }} />
           <Stack.Screen name="account/edit" options={{ ...headerOptions, title: t('profile.editTitle') }} />

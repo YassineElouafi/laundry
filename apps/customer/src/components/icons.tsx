@@ -132,6 +132,80 @@ export function UserIcon({ size = 24, color = '#9aa091' }: NavIconProps) {
   );
 }
 
+export function BellIcon({ size = 22, color = '#f4f6ef' }: { size?: number; color?: string }) {
+  return (
+    <Svg width={size} height={size} viewBox="0 0 24 24" fill="none">
+      <Path
+        d="M18 8a6 6 0 0 0-12 0c0 7-3 9-3 9h18s-3-2-3-9"
+        stroke={color}
+        strokeWidth={2}
+        strokeLinecap="round"
+        strokeLinejoin="round"
+      />
+      <Path d="M13.7 21a2 2 0 0 1-3.4 0" stroke={color} strokeWidth={2} strokeLinecap="round" strokeLinejoin="round" />
+    </Svg>
+  );
+}
+
+export function GridIcon({ size = 20, color = '#f4f6ef' }: { size?: number; color?: string }) {
+  return (
+    <Svg width={size} height={size} viewBox="0 0 24 24" fill="none">
+      <Circle cx={6} cy={6} r={2.4} fill={color} />
+      <Circle cx={6} cy={6} r={2.4} fill={color} />
+      <Circle cx={14} cy={6} r={2.4} fill={color} />
+      <Circle cx={6} cy={14} r={2.4} fill={color} />
+      <Circle cx={14} cy={14} r={2.4} fill={color} />
+    </Svg>
+  );
+}
+
+export function SearchIcon({ size = 20, color = '#9aa091' }: { size?: number; color?: string }) {
+  return (
+    <Svg width={size} height={size} viewBox="0 0 24 24" fill="none">
+      <Circle cx={11} cy={11} r={7} stroke={color} strokeWidth={2} />
+      <Path d="M21 21l-4.3-4.3" stroke={color} strokeWidth={2} strokeLinecap="round" />
+    </Svg>
+  );
+}
+
+export function SlidersIcon({ size = 20, color = '#9aa091' }: { size?: number; color?: string }) {
+  return (
+    <Svg width={size} height={size} viewBox="0 0 24 24" fill="none">
+      <Path d="M4 8h10M18 8h2M4 16h2M10 16h10" stroke={color} strokeWidth={2} strokeLinecap="round" />
+      <Circle cx={16} cy={8} r={2.4} stroke={color} strokeWidth={2} />
+      <Circle cx={8} cy={16} r={2.4} stroke={color} strokeWidth={2} />
+    </Svg>
+  );
+}
+
+export function ShirtIcon({ size = 22, color = '#15180e' }: { size?: number; color?: string }) {
+  return (
+    <Svg width={size} height={size} viewBox="0 0 24 24" fill="none">
+      <Path
+        d="M9 3l3 2 3-2 5 3-2 4-2-1v9H8v-9l-2 1-2-4 5-3z"
+        stroke={color}
+        strokeWidth={1.8}
+        strokeLinecap="round"
+        strokeLinejoin="round"
+      />
+    </Svg>
+  );
+}
+
+export function MapPinIcon({ size = 16, color = '#9aa091' }: { size?: number; color?: string }) {
+  return (
+    <Svg width={size} height={size} viewBox="0 0 24 24" fill="none">
+      <Path
+        d="M20 10c0 6-8 12-8 12s-8-6-8-12a8 8 0 0 1 16 0z"
+        stroke={color}
+        strokeWidth={2}
+        strokeLinejoin="round"
+      />
+      <Circle cx={12} cy={10} r={2.6} stroke={color} strokeWidth={2} />
+    </Svg>
+  );
+}
+
 export function PhoneIcon({ size = 20, color = '#15180e' }: { size?: number; color?: string }) {
   return (
     <Svg width={size} height={size} viewBox="0 0 24 24" fill="none">
