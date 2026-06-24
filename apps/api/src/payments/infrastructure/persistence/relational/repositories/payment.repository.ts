@@ -8,6 +8,7 @@ import { PaymentRepository } from '../../payment.repository';
 import { PaymentMapper } from '../mappers/payment.mapper';
 import { IPaginationOptions } from '../../../../../utils/types/pagination-options';
 import { User } from '../../../../../users/domain/user';
+import { Order } from '../../../../../orders/domain/order';
 
 @Injectable()
 export class PaymentRelationalRepository implements PaymentRepository {
@@ -62,6 +63,17 @@ export class PaymentRelationalRepository implements PaymentRepository {
     });
 
     return entities.map((entity) => PaymentMapper.toDomain(entity));
+  }
+
+  async findLatestByOrderId(
+    orderId: Order['id'],
+  ): Promise<NullableType<Payment>> {
+    const entity = await this.paymentRepository.findOne({
+      where: { order: { id: String(orderId) } },
+      order: { createdAt: 'DESC' },
+    });
+
+    return entity ? PaymentMapper.toDomain(entity) : null;
   }
 
   async update(id: Payment['id'], payload: Partial<Payment>): Promise<Payment> {

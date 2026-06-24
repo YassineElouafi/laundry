@@ -15,10 +15,14 @@ import { UsersService } from '../users/users.service';
 import { AddressesService } from '../addresses/addresses.service';
 import { ServiceItemsService } from '../service-items/service-items.service';
 import { TimeSlotsService } from '../time-slots/time-slots.service';
+import { TimeSlot } from '../time-slots/domain/time-slot';
 import { OrderEventRepository } from '../order-events/infrastructure/persistence/order-event.repository';
 import { OrderItem } from '../order-items/domain/order-item';
 import { OrderStatusEnum, ORDER_TRANSITIONS } from './order-status.enum';
 import { DeliveryTypeEnum } from './delivery-type.enum';
+import { PaymentMethodEnum } from './payment-method.enum';
+import { PaymentRepository } from '../payments/infrastructure/persistence/payment.repository';
+import { PaymentStatusEnum } from '../payments/payment-status.enum';
 import { RoleEnum } from '../roles/roles.enum';
 import {
   ORDER_CREATED_EVENT,
@@ -44,6 +48,7 @@ export class OrdersService {
     private readonly addressesService: AddressesService,
     private readonly serviceItemsService: ServiceItemsService,
     private readonly timeSlotsService: TimeSlotsService,
+    private readonly paymentRepository: PaymentRepository,
     private readonly eventEmitter: EventEmitter2,
   ) {}
 
@@ -92,34 +97,61 @@ export class OrdersService {
       items.push(orderItem);
     }
 
-    // Capacity-aware slot booking (optional). Throws 422 if a slot is full.
-    const pickupSlot = createOrderDto.pickupSlotId
-      ? await this.timeSlotsService.book(createOrderDto.pickupSlotId)
-      : null;
-    const deliverySlot = createOrderDto.deliverySlotId
-      ? await this.timeSlotsService.book(createOrderDto.deliverySlotId)
-      : null;
-
     const deliveryType =
       createOrderDto.deliveryType ?? DeliveryTypeEnum.doorstep;
     const deliveryFee = DELIVERY_FEES[deliveryType];
     const total = round2(subtotal + deliveryFee);
 
-    const order = await this.orderRepository.create({
-      user,
-      pickupAddress,
-      deliveryAddress,
-      pickupSlot,
-      deliverySlot,
-      paymentMethod: createOrderDto.paymentMethod,
-      deliveryType,
-      deliveryFee,
-      notes: createOrderDto.notes,
-      status: OrderStatusEnum.scheduled,
-      subtotal,
-      total,
-      items,
-    });
+    // Reserve slot capacity, then persist the order, as a compensating
+    // transaction. The boilerplate's per-entity repositories don't share a
+    // DB transaction, and `book()` is an atomic capacity-safe UPDATE that
+    // throws 422 when a slot is full — so without compensation a failure
+    // after the first booking (e.g. the second slot is full, or the order
+    // insert fails) would orphan the reserved capacity. If anything fails
+    // before the order is persisted, we release whatever we booked.
+    let pickupSlot: TimeSlot | null = null;
+    let deliverySlot: TimeSlot | null = null;
+    let order: Order;
+    try {
+      if (createOrderDto.pickupSlotId) {
+        pickupSlot = await this.timeSlotsService.book(createOrderDto.pickupSlotId);
+      }
+      if (createOrderDto.deliverySlotId) {
+        deliverySlot = await this.timeSlotsService.book(
+          createOrderDto.deliverySlotId,
+        );
+      }
+
+      order = await this.orderRepository.create({
+        user,
+        pickupAddress,
+        deliveryAddress,
+        pickupSlot,
+        deliverySlot,
+        paymentMethod: createOrderDto.paymentMethod,
+        deliveryType,
+        deliveryFee,
+        notes: createOrderDto.notes,
+        status: OrderStatusEnum.scheduled,
+        subtotal,
+        total,
+        items,
+      });
+    } catch (error) {
+      // The order was not persisted — give back any capacity we reserved so
+      // a partial failure never leaves a slot permanently booked.
+      if (pickupSlot?.id) {
+        await this.timeSlotsService
+          .release(pickupSlot.id)
+          .catch(() => undefined);
+      }
+      if (deliverySlot?.id) {
+        await this.timeSlotsService
+          .release(deliverySlot.id)
+          .catch(() => undefined);
+      }
+      throw error;
+    }
 
     await this.recordEvent(order, OrderStatusEnum.scheduled, 'Order created');
 
@@ -210,6 +242,21 @@ export class OrdersService {
           status: `Cannot transition from ${currentStatus} to ${newStatus}`,
         },
       });
+    }
+
+    // Payment gate: a card (CMI) order must be paid before it is dispatched
+    // for delivery. COD is collected by the driver on delivery, so it passes.
+    if (
+      newStatus === OrderStatusEnum.outForDelivery &&
+      order.paymentMethod === PaymentMethodEnum.cmi
+    ) {
+      const payment = await this.paymentRepository.findLatestByOrderId(order.id);
+      if (payment?.status !== PaymentStatusEnum.paid) {
+        throw new UnprocessableEntityException({
+          status: HttpStatus.UNPROCESSABLE_ENTITY,
+          errors: { payment: 'paymentRequiredBeforeDelivery' },
+        });
+      }
     }
 
     // Free booked capacity when an order is cancelled.

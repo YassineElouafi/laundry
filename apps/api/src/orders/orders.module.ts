@@ -7,6 +7,7 @@ import { RelationalOrderPersistenceModule } from './infrastructure/persistence/r
 import { ServiceItemsModule } from '../service-items/service-items.module';
 import { TimeSlotsModule } from '../time-slots/time-slots.module';
 import { RelationalOrderEventPersistenceModule } from '../order-events/infrastructure/persistence/relational/relational-persistence.module';
+import { RelationalPaymentPersistenceModule } from '../payments/infrastructure/persistence/relational/relational-persistence.module';
 
 @Module({
   imports: [
@@ -16,6 +17,7 @@ import { RelationalOrderEventPersistenceModule } from '../order-events/infrastru
     TimeSlotsModule,
     RelationalOrderPersistenceModule,
     RelationalOrderEventPersistenceModule,
+    RelationalPaymentPersistenceModule,
   ],
   controllers: [OrdersController],
   providers: [OrdersService],

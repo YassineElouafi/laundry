@@ -2,6 +2,7 @@ import { DeepPartial } from '../../../utils/types/deep-partial.type';
 import { NullableType } from '../../../utils/types/nullable.type';
 import { IPaginationOptions } from '../../../utils/types/pagination-options';
 import { User } from '../../../users/domain/user';
+import { Order } from '../../../orders/domain/order';
 import { Payment } from '../../domain/payment';
 
 export abstract class PaymentRepository {
@@ -23,6 +24,11 @@ export abstract class PaymentRepository {
   ): Promise<NullableType<Payment>>;
 
   abstract findByIds(ids: Payment['id'][]): Promise<Payment[]>;
+
+  /** Most recent payment for an order (orders may be re-initiated). */
+  abstract findLatestByOrderId(
+    orderId: Order['id'],
+  ): Promise<NullableType<Payment>>;
 
   abstract update(
     id: Payment['id'],
