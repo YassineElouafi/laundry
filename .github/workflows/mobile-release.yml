@@ -1,0 +1,57 @@
+name: Mobile Release
+
+# Builds the customer app (iOS + Android) on EAS Cloud whenever a version tag
+# is pushed (e.g. `git tag v1.2.0 && git push origin v1.2.0`), or manually via
+# the Actions tab. Builds run on Expo's infrastructure, so no macOS runner or
+# local Xcode/Android toolchain is needed here.
+on:
+  push:
+    tags:
+      - 'v*'
+  workflow_dispatch:
+    inputs:
+      platform:
+        description: Platform to build
+        type: choice
+        default: all
+        options: [all, ios, android]
+      profile:
+        description: EAS build profile
+        type: choice
+        default: production
+        options: [production, preview]
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: apps/customer
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: pnpm/action-setup@v4
+        with:
+          version: 10
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: pnpm
+
+      - uses: expo/expo-github-action@v8
+        with:
+          eas-version: latest
+          token: ${{ secrets.EXPO_TOKEN }}
+
+      # EAS re-installs and bundles on its own servers; we don't need a local
+      # install. The workspace dep @laundry/shared is compiled on the EAS build
+      # server via the `eas-build-post-install` hook in apps/customer/package.json.
+
+      - name: EAS build (iOS + Android)
+        run: |
+          eas build \
+            --platform "${{ inputs.platform || 'all' }}" \
+            --profile "${{ inputs.profile || 'production' }}" \
+            --non-interactive \
+            --no-wait
