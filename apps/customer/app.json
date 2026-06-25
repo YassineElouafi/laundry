@@ -10,9 +10,12 @@
     "backgroundColor": "#0e100c",
     "newArchEnabled": true,
     "ios": {
-      "supportsTablet": true
+      "supportsTablet": true,
+      "bundleIdentifier": "com.laundry.customer"
     },
     "android": {
+      "package": "com.laundry.customer",
+      "versionCode": 1,
       "adaptiveIcon": {
         "backgroundColor": "#E6F4FE",
         "foregroundImage": "./assets/images/android-icon-foreground.png",
