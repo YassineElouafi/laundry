@@ -1,27 +1,18 @@
-import { useCallback, useEffect, useState } from 'react';
+import { useEffect } from 'react';
 import { Pressable, StyleSheet, Text, View } from 'react-native';
 import { useRouter } from 'expo-router';
 import { StatusBar } from 'expo-status-bar';
 import { useTranslation } from 'react-i18next';
 import { useAuthStore } from '../stores/auth-store';
-import { authenticate } from '../lib/biometric';
+import { useBiometricUnlock } from '../lib/use-biometric-unlock';
 import { FingerprintIcon, LockIcon } from './icons';
 import { colors, radius, spacing } from '../theme';
 
 export function LockScreen() {
   const { t } = useTranslation();
   const router = useRouter();
-  const unlock = useAuthStore((s) => s.unlock);
   const reset = useAuthStore((s) => s.reset);
-  const [busy, setBusy] = useState(false);
-
-  const tryUnlock = useCallback(async () => {
-    if (busy) return;
-    setBusy(true);
-    const ok = await authenticate(t('biometric.unlockPrompt'), t('common.cancel'));
-    setBusy(false);
-    if (ok) unlock();
-  }, [busy, t, unlock]);
+  const { tryUnlock } = useBiometricUnlock();
 
   // Auto-prompt as soon as the lock screen appears.
   useEffect(() => {

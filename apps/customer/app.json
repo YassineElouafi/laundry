@@ -11,6 +11,7 @@
     "ios": {
       "supportsTablet": true,
       "bundleIdentifier": "com.laundry.customer",
+      "usesAppleSignIn": true,
       "infoPlist": {
         "ITSAppUsesNonExemptEncryption": false
       }
@@ -48,6 +49,23 @@
         "expo-local-authentication",
         {
           "faceIDPermission": "Allow Laundry to use Face ID to unlock the app."
+        }
+      ],
+      "expo-apple-authentication",
+      [
+        "@react-native-google-signin/google-signin",
+        {
+          "iosUrlScheme": "com.googleusercontent.apps.REPLACE_WITH_GOOGLE_IOS_CLIENT_ID"
+        }
+      ],
+      [
+        "react-native-fbsdk-next",
+        {
+          "appID": "REPLACE_WITH_FACEBOOK_APP_ID",
+          "clientToken": "REPLACE_WITH_FACEBOOK_CLIENT_TOKEN",
+          "displayName": "Laundry",
+          "scheme": "fbREPLACE_WITH_FACEBOOK_APP_ID",
+          "isAutoInitEnabled": true
         }
       ]
     ],

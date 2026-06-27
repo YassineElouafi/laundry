@@ -114,17 +114,27 @@ export function SocialButton({
   label,
   icon,
   onPress,
+  loading = false,
+  disabled = false,
 }: {
   label: string;
   icon: ReactNode;
   onPress: () => void;
+  loading?: boolean;
+  disabled?: boolean;
 }) {
+  const blocked = disabled || loading;
   return (
     <Pressable
       onPress={onPress}
-      style={({ pressed }) => [styles.socialBtn, pressed && { opacity: 0.7 }]}
+      disabled={blocked}
+      style={({ pressed }) => [
+        styles.socialBtn,
+        pressed && { opacity: 0.7 },
+        blocked && { opacity: 0.5 },
+      ]}
     >
-      {icon}
+      {loading ? <ActivityIndicator color={colors.text} /> : icon}
       <Text style={styles.socialText}>{label}</Text>
     </Pressable>
   );

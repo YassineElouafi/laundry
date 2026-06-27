@@ -48,6 +48,25 @@ export async function register(input: {
   await api.post('/auth/email/register', input);
 }
 
+export async function loginWithGoogle(idToken: string): Promise<LoginResponse> {
+  const { data } = await api.post<LoginResponse>('/auth/google/login', { idToken });
+  return data;
+}
+
+export async function loginWithApple(input: {
+  idToken: string;
+  firstName?: string | null;
+  lastName?: string | null;
+}): Promise<LoginResponse> {
+  const { data } = await api.post<LoginResponse>('/auth/apple/login', input);
+  return data;
+}
+
+export async function loginWithFacebook(accessToken: string): Promise<LoginResponse> {
+  const { data } = await api.post<LoginResponse>('/auth/facebook/login', { accessToken });
+  return data;
+}
+
 export async function fetchMe(): Promise<UserDto> {
   const { data } = await api.get<UserDto>('/auth/me');
   return data;

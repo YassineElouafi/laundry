@@ -40,15 +40,18 @@ export default function RootLayout() {
     }
   }, [hydrated, accessToken, user, setUser]);
 
+  const inAuth = segments[0] === '(auth)';
+  const inTabs = segments[0] === '(tabs)';
+
   useEffect(() => {
     if (!hydrated) return;
-    const inAuth = segments[0] === '(auth)';
     if (!accessToken && !inAuth) {
       router.replace('/(auth)');
-    } else if (accessToken && inAuth) {
+    } else if (accessToken && inAuth && !locked) {
+      // Stay on the auth screens while locked so the user can unlock there.
       router.replace('/(tabs)');
     }
-  }, [hydrated, accessToken, segments, router]);
+  }, [hydrated, accessToken, locked, inAuth, router]);
 
   // Re-lock when the app returns to the foreground from background.
   const appState = useRef(AppState.currentState);
@@ -70,7 +73,9 @@ export default function RootLayout() {
     headerTitleStyle: { color: colors.text },
   } as const;
 
-  const showLock = hydrated && !!accessToken && biometricEnabled && locked;
+  // Cold-start locks are handled on the auth screens; the overlay only covers
+  // an in-app re-lock (returning from background while inside the tabs).
+  const showLock = hydrated && !!accessToken && biometricEnabled && locked && inTabs;
 
   return (
     <GestureHandlerRootView style={{ flex: 1, backgroundColor: colors.bg }}>

@@ -61,7 +61,8 @@ export const useAuthStore = create<AuthState>((set, get) => ({
   setSession: async (token, refresh, user) => {
     await SecureStore.setItemAsync(ACCESS, token);
     await SecureStore.setItemAsync(REFRESH, refresh);
-    set({ accessToken: token, refreshToken: refresh, user });
+    // A fresh credential login is already authenticated — never start it locked.
+    set({ accessToken: token, refreshToken: refresh, user, locked: false });
   },
 
   setTokens: async (token, refresh) => {

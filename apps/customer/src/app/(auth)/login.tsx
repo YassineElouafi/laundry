@@ -1,11 +1,14 @@
 import { useState } from 'react';
-import { Alert, Pressable, ScrollView, StyleSheet, Text, View } from 'react-native';
+import { Alert, Platform, Pressable, ScrollView, StyleSheet, Text, View } from 'react-native';
 import { useRouter } from 'expo-router';
 import { StatusBar } from 'expo-status-bar';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { useTranslation } from 'react-i18next';
 import { login, toAuthUser } from '../../lib/api/auth';
 import { useAuthStore } from '../../stores/auth-store';
+import { useBiometricUnlock } from '../../lib/use-biometric-unlock';
+import { useSocialLogin } from '../../lib/use-social-login';
+import { isAppleSignInSupported } from '../../lib/social';
 import { OrDivider, PrimaryButton, SocialButton, SoftField } from '../../components/ui';
 import {
   AppleIcon,
@@ -13,29 +16,34 @@ import {
   EyeIcon,
   EyeOffIcon,
   FacebookIcon,
+  FingerprintIcon,
   GoogleIcon,
 } from '../../components/icons';
-import { colors, spacing } from '../../theme';
+import { colors, radius, spacing } from '../../theme';
 
 export default function LoginScreen() {
   const { t } = useTranslation();
   const router = useRouter();
   const insets = useSafeAreaInsets();
   const setSession = useAuthStore((s) => s.setSession);
+  const accessToken = useAuthStore((s) => s.accessToken);
+  const biometricEnabled = useAuthStore((s) => s.biometricEnabled);
+  const locked = useAuthStore((s) => s.locked);
+  const { busy, tryUnlock } = useBiometricUnlock();
+  const { pending, signIn } = useSocialLogin();
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [secure, setSecure] = useState(true);
   const [loading, setLoading] = useState(false);
+
+  // Offer a one-tap biometric scan when a protected session is waiting.
+  const returningLocked = !!accessToken && biometricEnabled && locked;
 
   const canSubmit = email.trim().length > 0 && password.length > 0;
 
   function goBack() {
     if (router.canGoBack()) router.back();
     else router.replace('/(auth)');
-  }
-
-  function soon() {
-    Alert.alert(t('auth.login'), t('auth.socialSoon'));
   }
 
   async function onSubmit() {
@@ -64,6 +72,22 @@ export default function LoginScreen() {
         showsVerticalScrollIndicator={false}
       >
         <Text style={styles.heading}>{t('auth.welcomeBack')}</Text>
+
+        {returningLocked && (
+          <View style={{ marginTop: spacing.xl }}>
+            <Pressable
+              onPress={tryUnlock}
+              disabled={busy}
+              style={({ pressed }) => [styles.unlockBtn, pressed && { opacity: 0.85 }]}
+            >
+              <FingerprintIcon size={20} color={colors.primaryText} />
+              <Text style={styles.unlockText}>{t('biometric.quickUnlock')}</Text>
+            </Pressable>
+            <View style={{ marginTop: spacing.xl }}>
+              <OrDivider label={t('auth.or')} />
+            </View>
+          </View>
+        )}
 
         <View style={{ gap: spacing.md, marginTop: spacing.xl }}>
           <SoftField
@@ -106,16 +130,28 @@ export default function LoginScreen() {
         </View>
 
         <View style={{ gap: spacing.md }}>
-          <SocialButton label={t('auth.continueGoogle')} icon={<GoogleIcon />} onPress={soon} />
           <SocialButton
-            label={t('auth.continueApple')}
-            icon={<AppleIcon color={colors.social} />}
-            onPress={soon}
+            label={t('auth.continueGoogle')}
+            icon={<GoogleIcon />}
+            onPress={() => signIn('google')}
+            loading={pending === 'google'}
+            disabled={!!pending}
           />
+          {isAppleSignInSupported && (
+            <SocialButton
+              label={t('auth.continueApple')}
+              icon={<AppleIcon color={colors.social} />}
+              onPress={() => signIn('apple')}
+              loading={pending === 'apple'}
+              disabled={!!pending}
+            />
+          )}
           <SocialButton
             label={t('auth.continueFacebook')}
             icon={<FacebookIcon color={colors.social} />}
-            onPress={soon}
+            onPress={() => signIn('facebook')}
+            loading={pending === 'facebook'}
+            disabled={!!pending}
           />
         </View>
 
@@ -135,6 +171,16 @@ const styles = StyleSheet.create({
   back: { paddingHorizontal: spacing.lg, paddingTop: spacing.md },
   content: { paddingHorizontal: spacing.lg, paddingTop: spacing.lg, paddingBottom: spacing.xl },
   heading: { fontSize: 34, fontWeight: '800', color: colors.text, letterSpacing: -0.5 },
+  unlockBtn: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'center',
+    gap: spacing.sm,
+    height: 54,
+    borderRadius: radius.pill,
+    backgroundColor: colors.primary,
+  },
+  unlockText: { color: colors.primaryText, fontSize: 16, fontWeight: '700' },
   forgot: {
     color: colors.accent,
     fontSize: 16,

@@ -1,11 +1,15 @@
-import { Alert, Image, Pressable, StyleSheet, Text, View } from 'react-native';
+import { useEffect, useRef } from 'react';
+import { Image, Pressable, StyleSheet, Text, View } from 'react-native';
 import { useRouter } from 'expo-router';
 import { StatusBar } from 'expo-status-bar';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { useTranslation } from 'react-i18next';
 import { useVideoPlayer, VideoView } from 'expo-video';
 import { LinearGradient } from 'expo-linear-gradient';
-import { GoogleIcon } from '../../components/icons';
+import { FingerprintIcon, GoogleIcon } from '../../components/icons';
+import { useAuthStore } from '../../stores/auth-store';
+import { useBiometricUnlock } from '../../lib/use-biometric-unlock';
+import { useSocialLogin } from '../../lib/use-social-login';
 import { radius, spacing } from '../../theme';
 
 const HERO = require('../../../assets/images/intro-hero.jpg');
@@ -16,15 +20,33 @@ export default function IntroScreen() {
   const router = useRouter();
   const insets = useSafeAreaInsets();
 
+  const accessToken = useAuthStore((s) => s.accessToken);
+  const biometricEnabled = useAuthStore((s) => s.biometricEnabled);
+  const locked = useAuthStore((s) => s.locked);
+  const reset = useAuthStore((s) => s.reset);
+  const { busy, tryUnlock } = useBiometricUnlock();
+  const { pending, signIn } = useSocialLogin();
+
+  // A returning user with a biometric-protected session lands here locked.
+  const returningLocked = !!accessToken && biometricEnabled && locked;
+
+  // Auto-prompt the biometric scan once when greeting a returning user.
+  const prompted = useRef(false);
+  useEffect(() => {
+    if (returningLocked && !prompted.current) {
+      prompted.current = true;
+      void tryUnlock();
+    }
+  }, [returningLocked, tryUnlock]);
+
   const player = useVideoPlayer(HERO_VIDEO, (p) => {
     p.loop = true;
     p.muted = true;
     p.play();
   });
 
-  function onGoogle() {
-    // Google OAuth is not wired up yet on the API/mobile side.
-    Alert.alert(t('auth.continueGoogle'), t('auth.socialSoon'));
+  async function logout() {
+    await reset();
   }
 
   return (
@@ -48,32 +70,67 @@ export default function IntroScreen() {
         pointerEvents="none"
       />
       <View style={[styles.content, { paddingBottom: insets.bottom + spacing.lg }]}>
-        <Text style={styles.title}>{t('auth.introTitle')}</Text>
-        <Text style={styles.subtitle}>{t('auth.introSubtitle')}</Text>
+        {returningLocked ? (
+          <>
+            <Text style={styles.title}>{t('auth.welcomeBack')}</Text>
+            <Text style={styles.subtitle}>{t('biometric.lockedSubtitle')}</Text>
 
-        <Pressable
-          onPress={() => router.push('/(auth)/register')}
-          style={({ pressed }) => [styles.primaryBtn, pressed && styles.pressed]}
-        >
-          <Text style={styles.primaryBtnText}>{t('auth.getStarted')}</Text>
-        </Pressable>
+            <Pressable
+              onPress={tryUnlock}
+              disabled={busy}
+              style={({ pressed }) => [styles.primaryBtn, styles.unlockBtn, pressed && styles.pressed]}
+            >
+              <FingerprintIcon size={20} color="#101418" />
+              <Text style={styles.primaryBtnText}>{t('biometric.quickUnlock')}</Text>
+            </Pressable>
 
-        <Pressable
-          onPress={onGoogle}
-          style={({ pressed }) => [styles.googleBtn, pressed && styles.pressed]}
-        >
-          <View style={styles.googleLogo}>
-            <GoogleIcon size={18} />
-          </View>
-          <Text style={styles.googleBtnText}>{t('auth.continueGoogle')}</Text>
-        </Pressable>
+            <Pressable
+              onPress={() => router.push('/(auth)/login')}
+              hitSlop={8}
+              style={styles.linkRow}
+            >
+              <Text style={styles.signInLink}>{t('biometric.usePassword')}</Text>
+            </Pressable>
 
-        <View style={styles.signInRow}>
-          <Text style={styles.signInPrompt}>{t('auth.signInPrompt')} </Text>
-          <Pressable onPress={() => router.push('/(auth)/login')} hitSlop={8}>
-            <Text style={styles.signInLink}>{t('auth.login')}</Text>
-          </Pressable>
-        </View>
+            <Pressable onPress={logout} hitSlop={8} style={styles.linkRow}>
+              <Text style={styles.signInPrompt}>{t('biometric.notYou')}</Text>
+            </Pressable>
+          </>
+        ) : (
+          <>
+            <Text style={styles.title}>{t('auth.introTitle')}</Text>
+            <Text style={styles.subtitle}>{t('auth.introSubtitle')}</Text>
+
+            <Pressable
+              onPress={() => router.push('/(auth)/register')}
+              style={({ pressed }) => [styles.primaryBtn, pressed && styles.pressed]}
+            >
+              <Text style={styles.primaryBtnText}>{t('auth.getStarted')}</Text>
+            </Pressable>
+
+            <Pressable
+              onPress={() => signIn('google')}
+              disabled={!!pending}
+              style={({ pressed }) => [
+                styles.googleBtn,
+                pressed && styles.pressed,
+                !!pending && styles.pressed,
+              ]}
+            >
+              <View style={styles.googleLogo}>
+                <GoogleIcon size={18} />
+              </View>
+              <Text style={styles.googleBtnText}>{t('auth.continueGoogle')}</Text>
+            </Pressable>
+
+            <View style={styles.signInRow}>
+              <Text style={styles.signInPrompt}>{t('auth.signInPrompt')} </Text>
+              <Pressable onPress={() => router.push('/(auth)/login')} hitSlop={8}>
+                <Text style={styles.signInLink}>{t('auth.login')}</Text>
+              </Pressable>
+            </View>
+          </>
+        )}
       </View>
     </View>
   );
@@ -108,6 +165,8 @@ const styles = StyleSheet.create({
     justifyContent: 'center',
   },
   primaryBtnText: { color: '#101418', fontSize: 17, fontWeight: '700' },
+  unlockBtn: { flexDirection: 'row', gap: spacing.sm },
+  linkRow: { alignSelf: 'center', marginTop: spacing.xs },
   googleBtn: {
     height: 56,
     borderRadius: radius.pill,
