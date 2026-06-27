@@ -8,7 +8,6 @@
     "scheme": "laundrycustomer",
     "userInterfaceStyle": "dark",
     "backgroundColor": "#0e100c",
-    "newArchEnabled": true,
     "ios": {
       "supportsTablet": true,
       "bundleIdentifier": "com.laundry.customer",
